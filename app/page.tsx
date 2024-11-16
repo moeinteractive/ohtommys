@@ -1,10 +1,15 @@
 'use client'
 
-import { Beer, Calendar, MenuIcon, Music, Phone, Utensils, Users, X } from 'lucide-react'
+import { Beer, MenuIcon, Music, Phone, Utensils, Users, X } from 'lucide-react'
+import { Calendar as CalendarIcon } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
 import InputMask from 'react-input-mask-next'
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -329,6 +334,7 @@ export default function Page() {
   // State for header scroll effect and mobile menu
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [isOpen, setIsOpen] = React.useState(false)
+  const [date, setDate] = React.useState<Date>()
 
   // Add scroll event listener for header transparency effect
   React.useEffect(() => {
@@ -423,7 +429,7 @@ export default function Page() {
                         <div className="flex flex-col items-center space-y-4">
                           {[
                             { href: '#menu', icon: <Utensils className="h-7 w-7" />, text: 'Menus' },
-                            { href: '#events', icon: <Calendar className="h-7 w-7" />, text: 'Events' },
+                            { href: '#events', icon: <CalendarIcon className="h-7 w-7" />, text: 'Events' },
                             { href: '#jobs', icon: <Users className="h-7 w-7" />, text: 'Openings' },
                             { href: '#contact', icon: <Phone className="h-7 w-7" />, text: 'Contact' }
                           ].map(({ href, icon, text }) => (
@@ -611,7 +617,7 @@ export default function Page() {
             <div className="mt-20 text-center">
               <div className="inline-flex flex-col items-center gap-4 bg-black/40 backdrop-blur-sm rounded-xl p-8 border-2 border-[#E4A853]/20">
                 <div className="flex items-center gap-3 text-[#E4A853] text-2xl">
-                  <Calendar className="h-8 w-8" />
+                  <CalendarIcon className="h-8 w-8" />
                   <span className="font-cormorant font-semibold">Daily Specials & Events</span>
                 </div>
                 <p className="font-cormorant text-white text-xl tracking-wider">
@@ -762,9 +768,10 @@ export default function Page() {
                         mask="(999) 999-9999"
                         id="phone"
                         name="phone"
-                        placeholder="(573) 555-0123"
+                        placeholder="Phone Number"
+                        className="w-full bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg rounded-md px-3 
+                                   border focus:ring-[#E4A853] focus:border-[#E4A853]"
                         required
-                        className="w-full bg-black/50 border-[#E4A853]/20 text-white text-lg rounded-lg focus:ring-[#E4A853] focus:border-[#E4A853]"
                       />
                     </div>
                   </div>
@@ -784,13 +791,29 @@ export default function Page() {
                     </div>
                     <div>
                       <Label htmlFor="start_date" className="text-[#E4A853] text-lg mb-2 block">When Can You Start?</Label>
-                      <Input 
-                        id="start_date" 
-                        type="date" 
-                        className="bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg" 
-                        min={new Date().toISOString().split('T')[0]}
-                        required 
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg justify-start text-left font-normal",
+                              !date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date ? format(date, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={(date: Date | undefined) => setDate(date)}
+                            initialFocus
+                            disabled={(date: Date) => date < new Date()}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                   
@@ -927,7 +950,12 @@ export default function Page() {
                 height={128}
                 width={400}
                 src="/images/ohtommys-bare.png"
-                style={{ height: 'auto', maxHeight: '128px', width: 'auto' }}
+                style={{ 
+                  width: 'auto',
+                  height: 'auto',
+                  maxHeight: '128px',
+                  maxWidth: '400px'
+                }}
               />
             </div>
 
@@ -1115,14 +1143,14 @@ export default function Page() {
 
         .celtic-weave {
           background-color: #001F0F;
-          opacity: 0.05;
+          opacity: 0.03;
           background-image: 
             linear-gradient(45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0),
             linear-gradient(-45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0),
             linear-gradient(45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0),
             linear-gradient(-45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0);
-          background-size: 40px 40px;
-          background-position: 0 0, 0 0, 20px 20px, 20px 20px;
+          background-size: 50px 50px;
+          background-position: 0 0, 0 0, 25px 25px, 25px 25px;
         }
 
         /* Celtic Shamrock Pattern for Experience section */
