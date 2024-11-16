@@ -35,7 +35,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Permissions-Policy',
-            value: 'private-state-token-redemption=(), private-state-token-issuance=(), browsing-topics=()'
+            value: 'camera=(), microphone=(), geolocation=()'
           }
         ]
       }

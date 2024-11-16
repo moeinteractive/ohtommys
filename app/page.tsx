@@ -371,12 +371,12 @@ export default function Page() {
               </SheetTrigger>
               <SheetContent 
                 side="right" 
-                className="w-full sm:w-[400px] bg-[#001F0F] border-l border-[#E4A853]/20 p-0 [&>button:first-child]:hidden overflow-y-auto"
+                className="w-full sm:w-[400px] bg-[#001F0F] border-l border-[#E4A853]/20 p-0 [&>button:first-child]:hidden"
                 aria-description="Navigation menu"
               >
-                <div className="flex flex-col min-h-full">
+                <div className="flex flex-col h-full">
                   {/* Header - Fixed at top */}
-                  <div className="sticky top-0 z-10 bg-[#001F0F] p-6 border-b border-[#E4A853]/20 flex items-center justify-between">
+                  <div className="flex-shrink-0 bg-[#001F0F] p-6 border-b border-[#E4A853]/20 flex items-center justify-between">
                     <Image
                       alt="Oh Tommy's Pub & Grill Logo"
                       className="h-16 w-auto"
@@ -391,83 +391,62 @@ export default function Page() {
                     </SheetClose>
                   </div>
 
-                  {/* Scrollable content */}
-                  <div className="flex-1 overflow-y-auto">
-                    {/* Quick Action Buttons */}
-                    <div className="p-6 space-y-4">
-                      <a 
-                        href="tel:(573) 347-3133"
-                        className="flex items-center justify-center gap-3 bg-[#E4A853] text-black py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#c28d3a] transition-colors"
-                      >
-                        <Phone className="h-6 w-6" />
-                        Call Us Now
-                      </a>
-                      <a 
-                        href="https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-3 bg-[#094023] text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#0c5831] transition-colors"
-                      >
-                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Get Directions
-                      </a>
+                  {/* Content area with flex layout */}
+                  <div className="flex flex-col h-full justify-between">
+                    {/* Quick actions and navigation - scrollable if needed */}
+                    <div className="flex-grow overflow-y-auto">
+                      {/* Quick Action Buttons */}
+                      <div className="p-6 space-y-4">
+                        <a 
+                          href="tel:(573) 347-3133"
+                          className="flex items-center justify-center gap-3 bg-[#E4A853] text-black py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#c28d3a] transition-colors"
+                        >
+                          <Phone className="h-6 w-6" />
+                          Call Us Now
+                        </a>
+                        <a 
+                          href="https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-3 bg-[#094023] text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#0c5831] transition-colors"
+                        >
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Get Directions
+                        </a>
+                      </div>
+
+                      {/* Navigation Links */}
+                      <nav className="px-6 py-4">
+                        <div className="flex flex-col items-center space-y-4">
+                          {[
+                            { href: '#menu', icon: <Utensils className="h-7 w-7" />, text: 'Menus' },
+                            { href: '#events', icon: <Calendar className="h-7 w-7" />, text: 'Events' },
+                            { href: '#jobs', icon: <Users className="h-7 w-7" />, text: 'Openings' },
+                            { href: '#contact', icon: <Phone className="h-7 w-7" />, text: 'Contact' }
+                          ].map(({ href, icon, text }) => (
+                            <Link 
+                              key={href}
+                              className="flex items-center justify-center gap-3 text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
+                              href={href}
+                              onClick={() => setIsOpen(false)}
+                            >
+                              {icon}
+                              <span className="font-playfair text-2xl font-bold tracking-wide">{text}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </nav>
                     </div>
 
-                    {/* Navigation Links */}
-                    <nav className="px-6 py-8">
-                      <div className="space-y-6 flex flex-col items-center">
-                        <Link 
-                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
-                          href="#menu"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <div className="flex items-center justify-center gap-3 w-full">
-                            <Utensils className="h-7 w-7" />
-                            <span className="font-playfair text-2xl font-bold tracking-wide">Menus</span>
-                          </div>
-                        </Link>
-                        <Link 
-                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
-                          href="#events"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <div className="flex items-center justify-center gap-3 w-full">
-                            <Calendar className="h-7 w-7" />
-                            <span className="font-playfair text-2xl font-bold tracking-wide">Events</span>
-                          </div>
-                        </Link>
-                        <Link 
-                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
-                          href="#jobs"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <div className="flex items-center justify-center gap-3 w-full">
-                            <Users className="h-7 w-7" />
-                            <span className="font-playfair text-2xl font-bold tracking-wide">Openings</span>
-                          </div>
-                        </Link>
-                        <Link 
-                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
-                          href="#contact"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <div className="flex items-center justify-center gap-3 w-full">
-                            <Phone className="h-7 w-7" />
-                            <span className="font-playfair text-2xl font-bold tracking-wide">Contact</span>
-                          </div>
-                        </Link>
+                    {/* Footer - Fixed at bottom */}
+                    <div className="flex-shrink-0 bg-[#001F0F] p-6 border-t border-[#E4A853]/20">
+                      <div className="text-center">
+                        <p className="text-[#E4A853] text-lg font-medium mb-2">{getDayName()} Hours</p>
+                        <p className="text-white text-lg">{getTodayHours()}</p>
                       </div>
-                    </nav>
-                  </div>
-
-                  {/* Footer - Fixed at bottom */}
-                  <div className="sticky bottom-0 bg-[#001F0F] p-6 border-t border-[#E4A853]/20">
-                    <div className="text-center">
-                      <p className="text-[#E4A853] text-lg font-medium mb-2">{getDayName()} Hours</p>
-                      <p className="text-white text-lg">{getTodayHours()}</p>
                     </div>
                   </div>
                 </div>
