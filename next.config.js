@@ -25,7 +25,25 @@ const nextConfig = {
         hostname: 'platform-lookaside.fbsbx.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.fna.fbcdn.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'scontent.fabe1-1.fna.fbcdn.net',
+        port: '',
+        pathname: '/**',
       }
+    ],
+    domains: [
+      'scontent.xx.fbcdn.net',
+      'scontent.fbna1-1.fna.fbcdn.net',
+      'scontent-iad3-1.xx.fbcdn.net',
+      'scontent.fabe1-1.fna.fbcdn.net'
     ]
   },
   async headers() {

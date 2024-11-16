@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import SpecialsMenu from "@/app/components/specials-menu"
 
 type FacebookPost = {
   id: string
@@ -23,6 +25,12 @@ type FacebookPost = {
   message?: string
   created_time: string
 }
+
+type SelectedPost = {
+  full_picture?: string
+  message?: string
+  created_time: string
+} | null
 
 // Utility functions to get business hours and current day
 const getTodayHours = () => {
@@ -168,19 +176,25 @@ const PromotionCard = ({
   )
 }
 
-// Component to fetch and display Facebook posts
+// Update the FacebookPosts component
 const FacebookPosts = () => {
   const [posts, setPosts] = React.useState<FacebookPost[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [selectedPost, setSelectedPost] = React.useState<SelectedPost>(null)
 
   React.useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await fetch('/api/facebook-posts')
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts')
+        }
         const data = await response.json()
         setPosts(data.data || [])
-      } catch (error) {
-        console.error('Failed to fetch Facebook posts:', error)
+      } catch (err) {
+        setError('Failed to load posts')
+        console.error('Error fetching posts:', err)
       } finally {
         setIsLoading(false)
       }
@@ -189,44 +203,109 @@ const FacebookPosts = () => {
     fetchPosts()
   }, [])
 
+  // Updated removeHashtags function
+  const removeHashtags = (message: string) => {
+    // First split into sentences/segments
+    return message
+      .split(/\s+/)
+      .filter(word => !word.includes('#')) // Remove any word containing a hashtag
+      .join(' ')
+      .trim()
+      // Remove any trailing punctuation that might have been next to hashtags
+      .replace(/\s+([.,!?])(\s|$)/g, '$1$2')
+      .trim();
+  };
+
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[1, 2, 3, 4, 5, 6].map((item) => (
-          <div key={item} className="aspect-square animate-pulse bg-gray-800 rounded-lg" />
-        ))}
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E4A853]"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <p className="text-red-500">{error}</p>
       </div>
     )
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {posts.map((post) => (
-        <div key={post.id} className="group relative aspect-square overflow-hidden rounded-lg">
-          {post.full_picture ? (
-            <Image
-              alt={post.message?.slice(0, 100) || 'Facebook post'}
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              src={post.full_picture}
-            />
-          ) : (
-            <div className="h-full bg-black/50 flex items-center justify-center p-6">
-              <p className="text-white text-center font-cormorant">
-                {post.message?.slice(0, 150)}...
-              </p>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <div className="flex h-full items-center justify-center p-6">
-              <p className="text-white text-center font-cormorant">
-                {post.message?.slice(0, 150)}...
-              </p>
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className="w-full max-w-[1200px] mx-auto px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <Dialog key={post.id}>
+            <DialogTrigger asChild>
+              <div 
+                className="relative rounded-xl bg-black/40 backdrop-blur-sm border-2 border-[#E4A853]/20 p-4 
+                           transform transition-all duration-300 hover:scale-[1.02] hover:border-[#E4A853]/40
+                           w-full cursor-pointer"
+              >
+                {post.full_picture && (
+                  <div className="relative w-full aspect-[4/3] mb-4 rounded-lg overflow-hidden">
+                    <Image
+                      src={post.full_picture}
+                      alt="Facebook post image"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      priority
+                    />
+                  </div>
+                )}
+                {post.message && (
+                  <div className="flex-grow">
+                    <p className="font-cormorant text-xl text-white mb-4 line-clamp-4">
+                      {removeHashtags(post.message)}
+                    </p>
+                  </div>
+                )}
+                <p className="text-[#E4A853] text-sm mt-auto">
+                  {new Date(post.created_time).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-[90vw] md:max-w-[600px] max-h-[90vh] overflow-y-auto bg-[#001F0F] border-[#E4A853]/20">
+              <div className="space-y-6">
+                {post.full_picture && (
+                  <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
+                    <Image
+                      src={post.full_picture}
+                      alt="Facebook post image"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 90vw, 600px"
+                      priority
+                    />
+                  </div>
+                )}
+                {post.message && (
+                  <div className="flex-grow">
+                    <p className="font-cormorant text-xl text-white/90">
+                      {removeHashtags(post.message)}
+                    </p>
+                  </div>
+                )}
+                <p className="text-[#E4A853] text-sm">
+                  {new Date(post.created_time).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+        ))}
+      </div>
     </div>
   )
 }
@@ -535,12 +614,18 @@ export default function Page() {
               >
                 VIEW FULL MENU
               </CelticButton>
-              <CelticButton 
-                onClick={() => window.location.href = '#specials'} 
-                className="flex-1 shadow-lg text-base sm:text-xl py-2 px-4 sm:py-4 sm:px-8" // Reduced padding and adjusted text
-              >
-                VIEW SPECIALS
-              </CelticButton>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <CelticButton 
+                    className="flex-1 shadow-lg text-base sm:text-xl py-2 px-4 sm:py-4 sm:px-8"
+                  >
+                    VIEW SPECIALS
+                  </CelticButton>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
+                  <SpecialsMenu />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-black/80 to-transparent pt-8">
@@ -911,16 +996,36 @@ export default function Page() {
 
         {/* Social Media Section - Facebook feed integration */}
         <section className="relative bg-black py-24" id="social">
-          {/* Add Celtic knot background */}
           <div className="absolute inset-0 celtic-knot"></div>
-          
-          <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
-            <h2 className="font-playfair mb-12 text-center text-4xl font-bold text-white">Follow Us on Facebook</h2>
+          <div className="container mx-auto px-4 relative">
+            <div className="text-center mb-20">
+              {/* Decorative elements */}
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="w-16 h-px bg-[#E4A853]"></div>
+                <div className="w-3 h-3 rotate-45 bg-[#E4A853]"></div>
+                <div className="w-16 h-px bg-[#E4A853]"></div>
+              </div>
+              
+              <h2 className="font-playfair text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+                Latest Updates
+              </h2>
+              
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <div className="w-24 h-px bg-[#E4A853]"></div>
+                <Beer className="h-8 w-8 text-[#E4A853]" />
+                <div className="w-24 h-px bg-[#E4A853]"></div>
+              </div>
+              
+              <p className="font-cormorant text-2xl md:text-3xl text-gray-300 max-w-3xl mx-auto italic">
+                Stay connected with what&apos;s happening at Oh Tommy&apos;s
+              </p>
+            </div>
+            
             <FacebookPosts />
             <div className="mt-12 text-center">
               <CelticButton 
                 onClick={() => window.open('https://www.facebook.com/ohtommys.pubgrill', '_blank')}
-                className="bg-[#E4A853] text-black hover:bg-[#c28d3a]"
+                className="w-full sm:w-auto"
               >
                 Visit Our Facebook Page
               </CelticButton>
