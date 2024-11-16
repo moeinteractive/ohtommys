@@ -4,6 +4,7 @@ import { Beer, Calendar, MenuIcon, Music, Phone, Utensils, Users, X } from 'luci
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
+import InputMask from 'react-input-mask'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,14 +47,17 @@ const getDayName = () => {
 const CelticButton = ({ 
   children, 
   onClick,
-  className = ""
+  className = "",
+  type = "button"
 }: { 
   children: React.ReactNode
   onClick?: () => void
   className?: string
+  type?: "button" | "submit" | "reset"
 }) => {
   return (
     <button
+      type={type}
       onClick={onClick}
       className={`
         relative overflow-hidden group
@@ -216,6 +220,53 @@ const FacebookPosts = () => {
     </div>
   )
 }
+
+// Add this type for form data
+type FormData = {
+  name: string;
+  phone: string;
+  email: string;
+  startDate: string;
+  position: string;
+  availableDays: string[];
+  shifts: string[];
+  experience: string;
+}
+
+// Add this validation function
+const validateForm = (data: FormData) => {
+  const errors: Partial<Record<keyof FormData, string>> = {};
+  
+  if (!data.name.trim()) {
+    errors.name = 'Name is required';
+  }
+  
+  if (!data.phone.replace(/[^0-9]/g, '').match(/^\d{10}$/)) {
+    errors.phone = 'Valid phone number is required';
+  }
+  
+  if (!data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    errors.email = 'Valid email is required';
+  }
+  
+  if (!data.position) {
+    errors.position = 'Please select a position';
+  }
+  
+  if (data.availableDays.length === 0) {
+    errors.availableDays = 'Please select at least one day';
+  }
+  
+  if (data.shifts.length === 0) {
+    errors.shifts = 'Please select at least one shift';
+  }
+  
+  if (!data.experience.trim()) {
+    errors.experience = 'Experience details are required';
+  }
+  
+  return errors;
+};
 
 export default function Page() {
   const [isScrolled, setIsScrolled] = React.useState(false)
@@ -640,7 +691,10 @@ export default function Page() {
 
             <div className="max-w-3xl mx-auto">
               <div className="relative rounded-xl bg-[#001F0F]/80 backdrop-blur-sm border-2 border-[#E4A853]/20 p-8 md:p-12">
-                <form className="grid gap-6">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  // Add form submission logic here
+                }} className="grid gap-6">
                   {/* Personal Info */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -648,18 +702,21 @@ export default function Page() {
                       <Input 
                         id="name" 
                         className="bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg" 
-                        placeholder="Enter your full name" 
+                        placeholder="Enter your full name"
+                        maxLength={50}
+                        pattern="[A-Za-z\s]+"
+                        title="Please enter a valid name (letters and spaces only)"
                         required 
                       />
                     </div>
                     <div>
                       <Label htmlFor="phone" className="text-[#E4A853] text-lg mb-2 block">Phone Number</Label>
-                      <Input 
-                        id="phone" 
-                        type="tel" 
-                        className="bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg" 
-                        placeholder="(573) XXX-XXXX" 
-                        required 
+                      <InputMask 
+                        mask="(999) 999-9999"
+                        id="phone"
+                        className="w-full bg-black/50 border-2 border-[#E4A853]/20 text-white h-12 text-lg rounded-lg px-4 focus:border-[#E4A853] focus:ring-[#E4A853]"
+                        placeholder="(573) XXX-XXXX"
+                        required
                       />
                     </div>
                   </div>
@@ -671,7 +728,9 @@ export default function Page() {
                         id="email" 
                         type="email" 
                         className="bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg" 
-                        placeholder="Enter your email" 
+                        placeholder="Enter your email"
+                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                        title="Please enter a valid email address"
                         required 
                       />
                     </div>
@@ -681,6 +740,7 @@ export default function Page() {
                         id="start_date" 
                         type="date" 
                         className="bg-black/50 border-[#E4A853]/20 text-white h-12 text-lg" 
+                        min={new Date().toISOString().split('T')[0]}
                         required 
                       />
                     </div>
@@ -689,36 +749,18 @@ export default function Page() {
                   {/* Position Selection */}
                   <div>
                     <Label htmlFor="position" className="text-[#E4A853] text-lg mb-2 block">Position Interest</Label>
-                    <div className="relative">
-                      <select 
-                        id="position" 
-                        className="w-full appearance-none bg-black/50 border-2 border-[#E4A853]/20 text-white h-12 text-lg rounded-lg px-4 
-                          focus:border-[#E4A853] focus:ring-[#E4A853] transition-all duration-300
-                          hover:border-[#E4A853] cursor-pointer"
-                        required
-                      >
-                        <option value="" disabled selected className="text-gray-400">Select a position</option>
-                        <option value="cook" className="bg-[#001F0F] hover:bg-[#094023]">Cook</option>
-                        <option value="bartender" className="bg-[#001F0F] hover:bg-[#094023]">Bartender</option>
-                        <option value="waitstaff" className="bg-[#001F0F] hover:bg-[#094023]">Waitstaff</option>
-                      </select>
-                      {/* Custom dropdown arrow */}
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg 
-                          className="w-5 h-5 text-[#E4A853]" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
+                    <select 
+                      id="position" 
+                      className="w-full appearance-none bg-black/50 border-2 border-[#E4A853]/20 text-white h-12 text-lg rounded-lg px-4 
+                        focus:border-[#E4A853] focus:ring-[#E4A853] transition-all duration-300
+                        hover:border-[#E4A853] cursor-pointer"
+                      required
+                    >
+                      <option value="" disabled selected className="text-gray-400">Select a position</option>
+                      <option value="cook" className="bg-[#001F0F] hover:bg-[#094023]">Cook</option>
+                      <option value="bartender" className="bg-[#001F0F] hover:bg-[#094023]">Bartender</option>
+                      <option value="waitstaff" className="bg-[#001F0F] hover:bg-[#094023]">Waitstaff</option>
+                    </select>
                   </div>
                   
                   {/* Availability */}
@@ -780,12 +822,13 @@ export default function Page() {
                     <Textarea
                       className="bg-black/50 border-[#E4A853]/20 text-white min-h-[150px] text-lg"
                       id="experience"
-                      placeholder="Tell us about your relevant experience in the position you&apos;re applying for"
+                      placeholder="Tell us about your relevant experience in the position you're applying for"
+                      maxLength={1000}
                       required
                     />
                   </div>
                   
-                  <CelticButton onClick={() => {}} className="w-full mt-4">
+                  <CelticButton type="submit" className="w-full mt-4">
                     Submit Application
                   </CelticButton>
                 </form>
