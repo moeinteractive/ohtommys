@@ -273,6 +273,57 @@ const validateForm = (data: FormData) => {
   return errors;
 };
 
+// Find the job application form section and add form validation
+const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  
+  // Get form data
+  const formData = new FormData(event.currentTarget);
+  const data: FormData = {
+    name: formData.get('name') as string,
+    phone: formData.get('phone') as string,
+    email: formData.get('email') as string,
+    startDate: formData.get('startDate') as string,
+    position: formData.get('position') as string,
+    availableDays: formData.getAll('availableDays') as string[],
+    shifts: formData.getAll('shifts') as string[],
+    experience: formData.get('experience') as string,
+  };
+
+  // Validate form
+  const errors = validateForm(data);
+  
+  if (Object.keys(errors).length > 0) {
+    // Handle validation errors
+    console.error('Form validation errors:', errors);
+    // You could display these errors to the user
+    return;
+  }
+
+  // Process valid form submission
+  try {
+    const response = await fetch('/api/submit-application', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to submit application');
+    }
+
+    // Handle successful submission
+    console.log('Application submitted successfully');
+    // You could show a success message to the user
+    
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    // You could show an error message to the user
+  }
+};
+
 // Main page component
 export default function Page() {
   // State for header scroll effect and mobile menu
@@ -711,10 +762,7 @@ export default function Page() {
 
             <div className="max-w-3xl mx-auto">
               <div className="relative rounded-xl bg-[#001F0F]/80 backdrop-blur-sm border-2 border-[#E4A853]/20 p-8 md:p-12">
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  // Add form submission logic here
-                }} className="grid gap-6">
+                <form onSubmit={handleSubmit} className="grid gap-6">
                   {/* Personal Info */}
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
