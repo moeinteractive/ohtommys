@@ -1,6 +1,6 @@
 'use client'
 
-import { Beer, Calendar, MenuIcon, Music, Phone, Utensils, Users } from 'lucide-react'
+import { Beer, Calendar, MenuIcon, Music, Phone, Utensils, Users, X } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
@@ -18,6 +18,31 @@ type FacebookPost = {
   created_time: string
 }
 
+const getTodayHours = () => {
+  const today = new Date().getDay(); // 0 is Sunday, 1 is Monday, etc.
+  
+  switch (today) {
+    case 0: // Sunday
+      return "12:00 PM - 8:00 PM";
+    case 1: // Monday
+    case 2: // Tuesday
+      return "Closed";
+    case 3: // Wednesday
+    case 4: // Thursday
+    case 6: // Saturday
+      return "11:00 AM - 11:00 PM";
+    case 5: // Friday
+      return "11:00 AM - 12:00 AM";
+    default:
+      return "11:00 AM - 11:00 PM";
+  }
+};
+
+const getDayName = () => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[new Date().getDay()];
+};
+
 const CelticButton = ({ 
   children, 
   onClick,
@@ -32,7 +57,7 @@ const CelticButton = ({
       onClick={onClick}
       className={`
         relative overflow-hidden group
-        px-8 py-3 rounded-lg
+        px-8 py-4 rounded-lg
         transition-all duration-300
         ${className}
       `}
@@ -42,12 +67,12 @@ const CelticButton = ({
       
       {/* Border effect */}
       <div className="absolute inset-0">
-        <div className="absolute inset-[2px] border border-black/20 rounded-[6px]" />
+        <div className="absolute inset-[2px] border-2 border-black/20 rounded-[6px]" />
       </div>
       
       {/* Content */}
       <div className="relative flex items-center justify-center gap-2">
-        <span className="font-playfair text-lg font-bold tracking-wider text-black">
+        <span className="font-playfair text-xl md:text-2xl font-bold tracking-wider text-black">
           {children}
         </span>
       </div>
@@ -194,6 +219,7 @@ const FacebookPosts = () => {
 
 export default function Page() {
   const [isScrolled, setIsScrolled] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(false)
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -225,7 +251,7 @@ export default function Page() {
           
           {/* Mobile Menu Button - Right */}
           <div className="md:hidden ml-auto z-50">
-            <Sheet>
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="mr-2">
                   <MenuIcon className="h-6 w-6 text-white" />
@@ -237,58 +263,91 @@ export default function Page() {
                 className="w-full sm:w-[400px] bg-[#001F0F] border-l border-[#E4A853]/20 p-0"
               >
                 <div className="flex flex-col h-full">
-                  {/* Mobile Menu Header */}
-                  <div className="p-6 border-b border-[#E4A853]/20">
+                  {/* Mobile Menu Header with Close Button */}
+                  <div className="p-6 border-b border-[#E4A853]/20 flex items-center justify-between">
                     <Image
                       alt="Oh Tommy's Pub & Grill Logo"
-                      className="h-16 w-auto mx-auto"
+                      className="h-16 w-auto"
                       height="64"
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Oh%20Tommys%20Building%20Logo%20v2-mBEa7NlzOaX2f8yquHBmCP2y4SwuFf.png"
+                      src="/images/ohtommys-logo.png"
                       width="200"
                     />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => setIsOpen(false)}
+                      className="text-white hover:text-[#E4A853]"
+                    >
+                      <X className="h-6 w-6" />
+                    </Button>
                   </div>
 
-                  {/* Mobile Menu Links */}
-                  <nav className="flex-1 p-6">
-                    <div className="grid gap-8 text-xl font-medium">
+                  {/* Quick Action Buttons */}
+                  <div className="p-6 space-y-4">
+                    <a 
+                      href="tel:(573) 347-3133"
+                      className="flex items-center justify-center gap-3 bg-[#E4A853] text-black py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#c28d3a] transition-colors"
+                    >
+                      <Phone className="h-6 w-6" />
+                      Call Us Now
+                    </a>
+                    <a 
+                      href="https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 bg-[#094023] text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#0c5831] transition-colors"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Get Directions
+                    </a>
+                  </div>
+
+                  {/* Navigation Links */}
+                  <nav className="flex-1 px-6 py-8">
+                    <div className="space-y-6">
                       <Link 
-                        className="flex items-center gap-3 text-white hover:text-[#E4A853] transition-colors duration-200" 
+                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
                         href="#menu"
+                        onClick={() => setIsOpen(false)}
                       >
-                        <Utensils className="h-5 w-5" />
-                        Menus
+                        <Utensils className="h-7 w-7 mb-2" />
+                        <span className="text-2xl font-playfair font-bold tracking-wide">Menus</span>
                       </Link>
                       <Link 
-                        className="flex items-center gap-3 text-white hover:text-[#E4A853] transition-colors duration-200" 
+                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
                         href="#events"
+                        onClick={() => setIsOpen(false)}
                       >
-                        <Calendar className="h-5 w-5" />
-                        Events
+                        <Calendar className="h-7 w-7 mb-2" />
+                        <span className="text-2xl font-playfair font-bold tracking-wide">Events</span>
                       </Link>
                       <Link 
-                        className="flex items-center gap-3 text-white hover:text-[#E4A853] transition-colors duration-200" 
+                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
                         href="#jobs"
+                        onClick={() => setIsOpen(false)}
                       >
-                        <Users className="h-5 w-5" />
-                        Careers
+                        <Users className="h-7 w-7 mb-2" />
+                        <span className="text-2xl font-playfair font-bold tracking-wide">Openings</span>
                       </Link>
                       <Link 
-                        className="flex items-center gap-3 text-white hover:text-[#E4A853] transition-colors duration-200" 
+                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
                         href="#contact"
+                        onClick={() => setIsOpen(false)}
                       >
-                        <Phone className="h-5 w-5" />
-                        Contact
+                        <Phone className="h-7 w-7 mb-2" />
+                        <span className="text-2xl font-playfair font-bold tracking-wide">Contact</span>
                       </Link>
                     </div>
                   </nav>
 
-                  {/* Mobile Menu Footer */}
+                  {/* Footer */}
                   <div className="p-6 border-t border-[#E4A853]/20">
-                    <div className="flex items-center justify-center gap-2 text-[#E4A853]">
-                      <Phone className="h-5 w-5" />
-                      <a href="tel:(573) 347-3133" className="text-lg font-medium">
-                        (573) 347-3133
-                      </a>
+                    <div className="text-center">
+                      <p className="text-[#E4A853] text-lg font-medium mb-2">{getDayName()} Hours</p>
+                      <p className="text-white text-lg">{getTodayHours()}</p>
                     </div>
                   </div>
                 </div>
@@ -307,7 +366,7 @@ export default function Page() {
               alt="Oh Tommy's Pub & Grill Logo"
               className="h-12 w-auto md:h-20"
               height="96"
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Oh%20Tommys%20Building%20Logo%20v2-mBEa7NlzOaX2f8yquHBmCP2y4SwuFf.png"
+              src="/images/ohtommys-logo.png"
               width="300"
               priority
             />
@@ -316,7 +375,7 @@ export default function Page() {
           {/* Desktop Navigation - Right */}
           <nav className="hidden items-center gap-12 md:flex">
             <Link className="text-lg font-medium tracking-wider text-white hover:text-[#E4A853] transition-colors duration-200" href="#jobs">
-              CAREERS
+              OPENINGS
             </Link>
             <Link className="text-lg font-medium tracking-wider text-white hover:text-[#E4A853] transition-colors duration-200" href="#contact">
               CONTACT
@@ -338,30 +397,59 @@ export default function Page() {
           </video>
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/50" />
           <div className="relative flex min-h-screen flex-col items-center justify-center px-4 text-center">
-            <h1 className="font-playfair mb-4 max-w-4xl text-4xl font-bold tracking-tight text-white drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl">
+            {/* Animate the main heading with a fade-in and slide-up effect */}
+            <h1 className="font-playfair mb-6 max-w-4xl text-4xl font-bold tracking-tight text-white 
+                           drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl
+                           animate-[fadeIn_1s_ease-out,slideUp_1s_ease-out]"
+            >
               Great Food, Fine Drinks, Good Times &
-              <span className="font-great-vibes block text-[#E4A853] drop-shadow-lg">Old Friends</span>
+              <span className="font-great-vibes block text-[#E4A853] drop-shadow-lg 
+                              text-5xl sm:text-6xl md:text-7xl mt-4
+                              animate-[fadeIn_1.5s_ease-out,slideUp_1.5s_ease-out]"
+              >
+                Old Friends
+              </span>
             </h1>
-            <p className="font-cormorant mb-8 max-w-2xl text-xl text-white drop-shadow-lg md:text-2xl font-semibold">
+            
+            {/* Increase subheading text size and add animation */}
+            <p className="font-cormorant mb-12 max-w-2xl text-2xl sm:text-2xl lg:text-3xl 
+                          text-white drop-shadow-lg font-semibold leading-tight
+                          animate-[fadeIn_2s_ease-out,slideUp_2s_ease-out]"
+            >
               Experience authentic Irish hospitality at the Lake of the Ozarks&apos; finest pub & grill
             </p>
-            <CelticButton onClick={() => window.location.href = '#menu'}>
-              VIEW OUR MENU
-            </CelticButton>
+            
+            {/* Adjust button container and reduce button size on mobile */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 w-full max-w-xl mx-auto
+                            animate-[fadeIn_2.5s_ease-out,slideUp_2.5s_ease-out]"
+            >
+              <CelticButton 
+                onClick={() => window.location.href = '#menu'} 
+                className="flex-1 shadow-lg text-base sm:text-xl py-2 px-4 sm:py-4 sm:px-8" // Reduced padding and adjusted text
+              >
+                VIEW FULL MENU
+              </CelticButton>
+              <CelticButton 
+                onClick={() => window.location.href = '#specials'} 
+                className="flex-1 shadow-lg text-base sm:text-xl py-2 px-4 sm:py-4 sm:px-8" // Reduced padding and adjusted text
+              >
+                VIEW SPECIALS
+              </CelticButton>
+            </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-black/80 to-transparent pt-8">
             <div className="grid grid-cols-3 gap-2 md:gap-8 text-center text-white px-2 md:px-8 pb-4">
-              <div className="border-r border-white/20 px-2 md:px-8">
-                <p className="font-cormorant text-sm md:text-lg font-semibold drop-shadow-lg">Monday-Tuesday</p>
-                <p className="text-[#E4A853] text-sm md:text-lg font-semibold drop-shadow-lg">Closed</p>
+              <div className="border-r border-white/20 px-1 md:px-8">
+                <p className="font-cormorant text-base md:text-lg font-semibold drop-shadow-lg">Monday-Tuesday</p>
+                <p className="text-[#E4A853] text-base md:text-lg font-semibold drop-shadow-lg">Closed</p>
               </div>
-              <div className="border-r border-white/20 px-2 md:px-8">
-                <p className="font-cormorant text-sm md:text-lg font-semibold drop-shadow-lg">Wed-Saturday</p>
-                <p className="text-[#E4A853] text-sm md:text-lg font-semibold drop-shadow-lg">11am - 11pm</p>
+              <div className="border-r border-white/20 px-1 md:px-8">
+                <p className="font-cormorant text-base md:text-lg font-semibold drop-shadow-lg">Wed-Saturday</p>
+                <p className="text-[#E4A853] text-base md:text-lg font-semibold drop-shadow-lg">11am - 11pm</p>
               </div>
-              <div className="px-2 md:px-8">
-                <p className="font-cormorant text-sm md:text-lg font-semibold drop-shadow-lg">Sunday</p>
-                <p className="text-[#E4A853] text-sm md:text-lg font-semibold drop-shadow-lg">12pm - 8pm</p>
+              <div className="px-1 md:px-8">
+                <p className="font-cormorant text-base md:text-lg font-semibold drop-shadow-lg">Sunday</p>
+                <p className="text-[#E4A853] text-base md:text-lg font-semibold drop-shadow-lg">12pm - 8pm</p>
               </div>
             </div>
           </div>
@@ -404,7 +492,7 @@ export default function Page() {
                 onClick={() => window.location.href = '#events'}
               />
               <PromotionCard 
-                title="Cornhole & Karaoke Thursdays"
+                title="Cornhole & Karaoke"
                 mainText="Join us every Thursday for competitive cornhole tournaments and karaoke! Win prizes, enjoy drink specials, and show off your singing skills."
                 ctaText="Join The Fun"
                 imageSrc="/images/corhole2.jpg"
@@ -412,8 +500,8 @@ export default function Page() {
               />
               <PromotionCard 
                 title="Special Events"
-                mainText="From holiday celebrations to Bike Fest, we go all out for our events! Join us for themed parties, decorations, special menus, and unforgettable memories with friends and family."
-                ctaText="See Events"
+                mainText="From holiday celebrations to Bike Fest and our KC Chiefs games! Join us for themed parties, decorations, special menus, and unforgettable memories with friends and family."
+                ctaText="SEE ALL EVENTS"
                 imageSrc="/images/halloween.jpg"
                 onClick={() => window.location.href = '#events'}
               />
@@ -461,17 +549,58 @@ export default function Page() {
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <div key={item} className="relative rounded-xl bg-black/40 backdrop-blur-sm border-2 border-[#E4A853]/20 p-8 transform transition-all duration-300 hover:scale-105">
+              {[
+                {
+                  date: "NOV 23",
+                  title: "Thanksgiving Celebration",
+                  time: "11:00 AM - 8:00 PM",
+                  description: "Join us for our special Thanksgiving feast! Traditional dinner with all the fixings, football games, and holiday cheer with friends and family."
+                },
+                {
+                  date: "DEC 16",
+                  title: "Christmas Party",
+                  time: "7:00 PM - 11:00 PM",
+                  description: "Annual Christmas celebration featuring live music, ugly sweater contest, holiday drink specials, and festive atmosphere!"
+                },
+                {
+                  date: "DEC 24",
+                  title: "Christmas Eve",
+                  time: "11:00 AM - 6:00 PM",
+                  description: "Special holiday hours with festive drinks and appetizers. Come celebrate with us before your family gatherings!"
+                },
+                {
+                  date: "DEC 31",
+                  title: "New Year's Eve Bash",
+                  time: "8:00 PM - 1:00 AM",
+                  description: "Ring in 2024 with live music, champagne toast at midnight, party favors, and our special late night menu!"
+                },
+                {
+                  date: "JAN 1",
+                  title: "New Year's Day",
+                  time: "12:00 PM - 8:00 PM",
+                  description: "Start 2024 right with our recovery brunch menu, Bloody Mary bar, and all the football games on our big screens!"
+                },
+                {
+                  date: "JAN 6",
+                  title: "Live Music Night",
+                  time: "8:00 PM - 11:00 PM",
+                  description: "Kick off the new year with great live music, amazing drinks, and the best atmosphere at the Lake!"
+                }
+              ].map((event) => (
+                <div key={event.date} className="relative rounded-xl bg-black/40 backdrop-blur-sm border-2 border-[#E4A853]/20 p-8 transform transition-all duration-300 hover:scale-105">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4">
-                    <div className="bg-[#E4A853] text-black px-6 py-2 rounded-full font-bold">
-                      MAR {item}
+                    <div className="bg-[#E4A853] text-black px-6 py-2 rounded-full font-bold text-xl">
+                      {event.date}
                     </div>
                   </div>
-                  <h3 className="font-playfair text-2xl font-bold text-[#E4A853] mb-4 mt-4 text-center">Live Music Night</h3>
-                  <p className="font-cormorant text-xl text-white mb-4 text-center">8:00 PM - 11:00 PM</p>
-                  <p className="font-cormorant text-lg text-gray-300 text-center mb-6">
-                    Join us for an evening of live music featuring local favorite bands. Great drinks, great atmosphere, and amazing performances!
+                  <h3 className="font-playfair text-3xl font-bold text-[#E4A853] mb-4 mt-4 text-center">
+                    {event.title}
+                  </h3>
+                  <p className="font-cormorant text-2xl text-white mb-4 text-center">
+                    {event.time}
+                  </p>
+                  <p className="font-cormorant text-xl text-gray-300 text-center mb-6">
+                    {event.description}
                   </p>
                   <CelticButton onClick={() => {}} className="w-full">
                     Learn More
@@ -495,7 +624,7 @@ export default function Page() {
               </div>
               
               <h2 className="font-playfair text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
-                Join Our Team
+                Job Openings
               </h2>
               
               <div className="flex items-center justify-center gap-4 mb-8">
@@ -651,7 +780,7 @@ export default function Page() {
             <FacebookPosts />
             <div className="mt-12 text-center">
               <CelticButton className="bg-[#E4A853] text-black hover:bg-[#c28d3a]">
-                <Link href="https://www.facebook.com/ohtommys.pubgrill/" target="_blank" rel="noopener noreferrer">
+                <Link href="https://www.facebook.com/ohtommys.pubgrill" target="_blank" rel="noopener noreferrer">
                   Visit Our Facebook Page
                 </Link>
               </CelticButton>
@@ -674,21 +803,13 @@ export default function Page() {
               <div className="w-16 h-px bg-[#E4A853]"></div>
             </div>
 
-            <div className="flex items-center justify-center gap-12 mb-8">
+            <div className="flex items-center justify-center mb-8">
               <Image
                 alt="Oh Tommy's Pub & Grill Logo"
                 className="h-24 w-auto md:h-32 transition-transform duration-300 hover:scale-105"
                 height="128"
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Oh%20Tommys%20Building%20Logo%20v2-mBEa7NlzOaX2f8yquHBmCP2y4SwuFf.png"
+                src="/images/ohtommys-bare.png"
                 width="400"
-              />
-              <div className="h-16 md:h-20 w-px bg-[#E4A853]"></div>
-              <Image
-                alt="Oh Tommy's Circular Logo"
-                className="h-24 w-24 md:h-32 md:w-32 rounded-full transition-transform duration-300 hover:scale-105"
-                height="128"
-                width="128"
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/447009265_968735498595375_3270034976031523123_n.jpg-jvKE4G1Qlq5qzW7Tbl2vKi0LlQBpXT.jpeg"
               />
             </div>
 
@@ -707,8 +828,10 @@ export default function Page() {
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <Beer className="h-8 w-8 text-[#E4A853]" />
               </div>
-              <h3 className="font-playfair mb-6 text-2xl md:text-3xl font-semibold text-[#E4A853] text-center">Pub Hours</h3>
-              <div className="font-cormorant space-y-4 text-lg md:text-xl">
+              <h3 className="font-playfair mb-6 text-3xl md:text-3xl font-semibold text-[#E4A853] text-center">
+                Pub Hours
+              </h3>
+              <div className="font-cormorant space-y-4 text-xl md:text-xl">
                 <p className="flex justify-between">
                   <span>Monday-Tuesday</span>
                   <span className="text-[#E4A853]">Closed</span>
@@ -739,8 +862,10 @@ export default function Page() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </div>
-              <h3 className="font-playfair mb-6 text-2xl md:text-3xl font-semibold text-[#E4A853] text-center">Kitchen Hours</h3>
-              <div className="font-cormorant space-y-4 text-lg md:text-xl">
+              <h3 className="font-playfair mb-6 text-3xl md:text-3xl font-semibold text-[#E4A853] text-center">
+                Kitchen Hours
+              </h3>
+              <div className="font-cormorant space-y-4 text-xl md:text-xl">
                 <p className="flex justify-between">
                   <span>Monday-Friday</span>
                   <span className="text-[#E4A853]">11 AM–9 PM</span>
@@ -764,7 +889,9 @@ export default function Page() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h3 className="font-playfair mb-6 text-2xl md:text-3xl font-semibold text-[#E4A853] text-center">Find Us</h3>
+              <h3 className="font-playfair mb-6 text-3xl md:text-3xl font-semibold text-[#E4A853] text-center">
+                Find Us
+              </h3>
               <div className="space-y-6">
                 <div className="relative h-[200px] w-full rounded-lg overflow-hidden border-2 border-[#E4A853]/20">
                   <iframe
@@ -782,13 +909,10 @@ export default function Page() {
                   href="https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-center font-cormorant text-xl hover:text-[#E4A853] transition-colors duration-200"
+                  className="block text-center font-cormorant text-2xl hover:text-[#E4A853] transition-colors duration-200"
                 >
                   6285 MO-7, Roach, MO 65787
                 </a>
-                <CelticButton onClick={() => window.open('https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787', '_blank')} className="w-full">
-                  Get Directions
-                </CelticButton>
               </div>
             </div>
           </div>
@@ -800,7 +924,7 @@ export default function Page() {
               <div className="w-2 h-2 rotate-45 bg-[#E4A853]/40"></div>
               <div className="w-12 h-px bg-[#E4A853]/40"></div>
             </div>
-            <p className="font-cormorant text-xl md:text-2xl text-gray-300">
+            <p className="font-cormorant text-2xl md:text-2xl text-gray-300">
               © {new Date().getFullYear()} Oh Tommy&apos;s Pub & Grill. All rights reserved.
             </p>
           </div>
@@ -824,6 +948,24 @@ export default function Page() {
 
         .font-irish {
           font-family: 'Irish Grover', cursive;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(20px);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>
