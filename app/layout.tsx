@@ -5,8 +5,13 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Oh Tommy's Pub & Grill - Lake of the Ozarks",
+  metadataBase: new URL('https://www.ohtommysirishpub.com'),
+  title: {
+    default: "Oh Tommy's Irish Pub & Grill - Lake of the Ozarks",
+    template: "%s | Oh Tommy's Irish Pub"
+  },
   description: "Experience authentic Irish hospitality at Oh Tommy's Pub & Grill, the Lake of the Ozarks' finest pub & grill. Join us for great food, fine drinks, live music, and unforgettable memories.",
+  applicationName: "Oh Tommy's Irish Pub",
   keywords: [
     "Oh Tommy's Irish Pub",
     "Oh Tommy's Pub & Grill",
@@ -77,6 +82,25 @@ export const metadata: Metadata = {
     canonical: 'https://www.ohtommysirishpub.com',
   },
   category: 'restaurant',
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+    other: [
+      {
+        rel: 'apple-touch-icon',
+        url: '/apple-touch-icon.png',
+      },
+    ],
+  },
+  formatDetection: {
+    telephone: true,
+    date: true,
+    address: true,
+    email: true,
+    url: true,
+  },
 }
 
 export default function RootLayout({
