@@ -930,7 +930,7 @@ export default function Page() {
       </main>
 
       {/* Footer with business information */}
-      <footer className="relative bg-[#001F0F] text-white py-24">
+      <footer className="relative bg-[#001F0F] text-white py-24" id="contact">
         {/* Celtic weave background */}
         <div className="absolute inset-0 celtic-weave"></div>
         <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
