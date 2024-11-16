@@ -725,17 +725,37 @@ export default function Page() {
                   <div>
                     <Label className="text-[#E4A853] text-lg mb-4 block">Available Days to Work</Label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                        <div key={day} className="flex items-center gap-2">
+                      {[
+                        { day: 'Monday', closed: true },
+                        { day: 'Tuesday', closed: true },
+                        { day: 'Wednesday', closed: false },
+                        { day: 'Thursday', closed: false },
+                        { day: 'Friday', closed: false },
+                        { day: 'Saturday', closed: false },
+                        { day: 'Sunday', closed: false }
+                      ].map(({ day, closed }) => (
+                        <div key={day} className={`flex items-center ${closed ? 'opacity-50' : ''}`}>
                           <input 
                             type="checkbox" 
                             id={day.toLowerCase()} 
                             className="w-5 h-5 rounded border-[#E4A853]/20 bg-black/50 text-[#E4A853] focus:ring-[#E4A853]"
+                            disabled={closed}
                           />
-                          <Label htmlFor={day.toLowerCase()} className="text-white text-lg">{day}</Label>
+                          <Label 
+                            htmlFor={day.toLowerCase()} 
+                            className={`text-white text-lg ml-2 ${closed ? 'line-through' : ''}`}
+                          >
+                            {day}
+                          </Label>
+                          {closed && (
+                            <span className="text-[#E4A853]/60 text-sm ml-1">(Closed)</span>
+                          )}
                         </div>
                       ))}
                     </div>
+                    <p className="text-[#E4A853]/60 text-sm mt-2 italic">
+                      Note: We are closed on Mondays and Tuesdays
+                    </p>
                   </div>
 
                   {/* Shift Preference */}
@@ -779,10 +799,11 @@ export default function Page() {
             <h2 className="font-playfair mb-12 text-center text-4xl font-bold text-white">Follow Us on Facebook</h2>
             <FacebookPosts />
             <div className="mt-12 text-center">
-              <CelticButton className="bg-[#E4A853] text-black hover:bg-[#c28d3a]">
-                <Link href="https://www.facebook.com/ohtommys.pubgrill" target="_blank" rel="noopener noreferrer">
-                  Visit Our Facebook Page
-                </Link>
+              <CelticButton 
+                onClick={() => window.open('https://www.facebook.com/ohtommys.pubgrill', '_blank')}
+                className="bg-[#E4A853] text-black hover:bg-[#c28d3a]"
+              >
+                Visit Our Facebook Page
               </CelticButton>
             </div>
           </div>
