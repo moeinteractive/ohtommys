@@ -1,8 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.ohtommysirishpub.com'),
@@ -59,11 +65,6 @@ export const metadata: Metadata = {
     description: "Experience authentic Irish hospitality at Oh Tommy's Pub & Grill, the Lake of the Ozarks' finest pub & grill. Join us for great food, fine drinks, live music, and unforgettable memories.",
     images: ['/images/ohtommys-logo.png'],
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   robots: {
     index: true,
     follow: true,
@@ -84,14 +85,21 @@ export const metadata: Metadata = {
   category: 'restaurant',
   manifest: '/site.webmanifest',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/android-chrome-192x192.png', sizes: '192x192' },
+      { url: '/android-chrome-512x512.png', sizes: '512x512' }
+    ],
     shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180' }
+    ],
     other: [
       {
-        rel: 'apple-touch-icon',
-        url: '/apple-touch-icon.png',
-      },
+        rel: 'mask-icon',
+        url: '/safari-pinned-tab.svg',
+        color: '#E4A853'
+      }
     ],
   },
   formatDetection: {

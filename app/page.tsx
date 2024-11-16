@@ -4,12 +4,12 @@ import { Beer, Calendar, MenuIcon, Music, Phone, Utensils, Users, X } from 'luci
 import Image from "next/image"
 import Link from "next/link"
 import * as React from "react"
-import InputMask from 'react-input-mask'
+import InputMask from 'react-input-mask-next'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 
 type FacebookPost = {
@@ -19,6 +19,7 @@ type FacebookPost = {
   created_time: string
 }
 
+// Utility functions to get business hours and current day
 const getTodayHours = () => {
   const today = new Date().getDay(); // 0 is Sunday, 1 is Monday, etc.
   
@@ -44,6 +45,7 @@ const getDayName = () => {
   return days[new Date().getDay()];
 };
 
+// Reusable custom button component with Celtic styling
 const CelticButton = ({ 
   children, 
   onClick,
@@ -87,6 +89,7 @@ const CelticButton = ({
   )
 }
 
+// Card component for displaying promotional content with Celtic styling
 const PromotionCard = ({ 
   title,
   mainText,
@@ -118,6 +121,7 @@ const PromotionCard = ({
               src={imageSrc}
               alt={title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
             {/* Gradient overlay with reduced opacity */}
@@ -159,6 +163,7 @@ const PromotionCard = ({
   )
 }
 
+// Component to fetch and display Facebook posts
 const FacebookPosts = () => {
   const [posts, setPosts] = React.useState<FacebookPost[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
@@ -197,8 +202,8 @@ const FacebookPosts = () => {
             <Image
               alt={post.message?.slice(0, 100) || 'Facebook post'}
               className="object-cover transition-transform duration-300 group-hover:scale-110"
-              height={400}
-              width={400}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               src={post.full_picture}
             />
           ) : (
@@ -221,7 +226,7 @@ const FacebookPosts = () => {
   )
 }
 
-// Add this type for form data
+// Type definitions for the job application form
 type FormData = {
   name: string;
   phone: string;
@@ -233,7 +238,7 @@ type FormData = {
   experience: string;
 }
 
-// Add this validation function
+// Form validation function for job applications
 const validateForm = (data: FormData) => {
   const errors: Partial<Record<keyof FormData, string>> = {};
   
@@ -268,10 +273,13 @@ const validateForm = (data: FormData) => {
   return errors;
 };
 
+// Main page component
 export default function Page() {
+  // State for header scroll effect and mobile menu
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [isOpen, setIsOpen] = React.useState(false)
 
+  // Add scroll event listener for header transparency effect
   React.useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0)
@@ -282,6 +290,7 @@ export default function Page() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Header with responsive navigation */}
       <header
         className={`fixed z-50 w-full transition-all duration-300 ${
           isScrolled 
@@ -311,91 +320,100 @@ export default function Page() {
               </SheetTrigger>
               <SheetContent 
                 side="right" 
-                className="w-full sm:w-[400px] bg-[#001F0F] border-l border-[#E4A853]/20 p-0"
+                className="w-full sm:w-[400px] bg-[#001F0F] border-l border-[#E4A853]/20 p-0 [&>button:first-child]:hidden overflow-y-auto"
+                aria-description="Navigation menu"
               >
-                <div className="flex flex-col h-full">
-                  {/* Mobile Menu Header with Close Button */}
-                  <div className="p-6 border-b border-[#E4A853]/20 flex items-center justify-between">
+                <div className="flex flex-col min-h-full">
+                  {/* Header - Fixed at top */}
+                  <div className="sticky top-0 z-10 bg-[#001F0F] p-6 border-b border-[#E4A853]/20 flex items-center justify-between">
                     <Image
                       alt="Oh Tommy's Pub & Grill Logo"
                       className="h-16 w-auto"
-                      height="64"
+                      height={64}
+                      width={200}
                       src="/images/ohtommys-logo.png"
-                      width="200"
+                      style={{ height: '64px', width: 'auto' }}
                     />
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => setIsOpen(false)}
-                      className="text-white hover:text-[#E4A853]"
-                    >
-                      <X className="h-6 w-6" />
-                    </Button>
+                    <SheetClose className="rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none">
+                      <X className="h-8 w-8 text-white" />
+                      <span className="sr-only">Close</span>
+                    </SheetClose>
                   </div>
 
-                  {/* Quick Action Buttons */}
-                  <div className="p-6 space-y-4">
-                    <a 
-                      href="tel:(573) 347-3133"
-                      className="flex items-center justify-center gap-3 bg-[#E4A853] text-black py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#c28d3a] transition-colors"
-                    >
-                      <Phone className="h-6 w-6" />
-                      Call Us Now
-                    </a>
-                    <a 
-                      href="https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-3 bg-[#094023] text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#0c5831] transition-colors"
-                    >
-                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Get Directions
-                    </a>
-                  </div>
-
-                  {/* Navigation Links */}
-                  <nav className="flex-1 px-6 py-8">
-                    <div className="space-y-6">
-                      <Link 
-                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
-                        href="#menu"
-                        onClick={() => setIsOpen(false)}
+                  {/* Scrollable content */}
+                  <div className="flex-1 overflow-y-auto">
+                    {/* Quick Action Buttons */}
+                    <div className="p-6 space-y-4">
+                      <a 
+                        href="tel:(573) 347-3133"
+                        className="flex items-center justify-center gap-3 bg-[#E4A853] text-black py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#c28d3a] transition-colors"
                       >
-                        <Utensils className="h-7 w-7 mb-2" />
-                        <span className="text-2xl font-playfair font-bold tracking-wide">Menus</span>
-                      </Link>
-                      <Link 
-                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
-                        href="#events"
-                        onClick={() => setIsOpen(false)}
+                        <Phone className="h-6 w-6" />
+                        Call Us Now
+                      </a>
+                      <a 
+                        href="https://maps.google.com/?q=6285+MO-7,+Roach,+MO+65787"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-3 bg-[#094023] text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-[#0c5831] transition-colors"
                       >
-                        <Calendar className="h-7 w-7 mb-2" />
-                        <span className="text-2xl font-playfair font-bold tracking-wide">Events</span>
-                      </Link>
-                      <Link 
-                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
-                        href="#jobs"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <Users className="h-7 w-7 mb-2" />
-                        <span className="text-2xl font-playfair font-bold tracking-wide">Openings</span>
-                      </Link>
-                      <Link 
-                        className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3" 
-                        href="#contact"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <Phone className="h-7 w-7 mb-2" />
-                        <span className="text-2xl font-playfair font-bold tracking-wide">Contact</span>
-                      </Link>
+                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Get Directions
+                      </a>
                     </div>
-                  </nav>
 
-                  {/* Footer */}
-                  <div className="p-6 border-t border-[#E4A853]/20">
+                    {/* Navigation Links */}
+                    <nav className="px-6 py-8">
+                      <div className="space-y-6 flex flex-col items-center">
+                        <Link 
+                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
+                          href="#menu"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <div className="flex items-center justify-center gap-3 w-full">
+                            <Utensils className="h-7 w-7" />
+                            <span className="font-playfair text-2xl font-bold tracking-wide">Menus</span>
+                          </div>
+                        </Link>
+                        <Link 
+                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
+                          href="#events"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <div className="flex items-center justify-center gap-3 w-full">
+                            <Calendar className="h-7 w-7" />
+                            <span className="font-playfair text-2xl font-bold tracking-wide">Events</span>
+                          </div>
+                        </Link>
+                        <Link 
+                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
+                          href="#jobs"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <div className="flex items-center justify-center gap-3 w-full">
+                            <Users className="h-7 w-7" />
+                            <span className="font-playfair text-2xl font-bold tracking-wide">Openings</span>
+                          </div>
+                        </Link>
+                        <Link 
+                          className="flex flex-col items-center text-white hover:text-[#E4A853] transition-colors duration-200 py-3 w-full" 
+                          href="#contact"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <div className="flex items-center justify-center gap-3 w-full">
+                            <Phone className="h-7 w-7" />
+                            <span className="font-playfair text-2xl font-bold tracking-wide">Contact</span>
+                          </div>
+                        </Link>
+                      </div>
+                    </nav>
+                  </div>
+
+                  {/* Footer - Fixed at bottom */}
+                  <div className="sticky bottom-0 bg-[#001F0F] p-6 border-t border-[#E4A853]/20">
                     <div className="text-center">
                       <p className="text-[#E4A853] text-lg font-medium mb-2">{getDayName()} Hours</p>
                       <p className="text-white text-lg">{getTodayHours()}</p>
@@ -416,9 +434,10 @@ export default function Page() {
             <Image
               alt="Oh Tommy's Pub & Grill Logo"
               className="h-12 w-auto md:h-20"
-              height="96"
+              height={80}
+              width={250}
               src="/images/ohtommys-logo.png"
-              width="300"
+              style={{ height: 'auto', maxHeight: '80px', width: 'auto' }}
               priority
             />
           </Link>
@@ -435,6 +454,7 @@ export default function Page() {
         </div>
       </header>
       <main className="flex-1">
+        {/* Hero Section with video background */}
         <section className="relative min-h-screen" id="home">
           <video
             autoPlay
@@ -442,7 +462,6 @@ export default function Page() {
             muted
             playsInline
             className="absolute inset-0 h-full w-full object-cover brightness-[0.7]"
-            poster="/images/video-poster.jpg"
           >
             <source src="/images/video.mp4" type="video/mp4" />
           </video>
@@ -506,9 +525,10 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Experience Section - showcasing pub features */}
         <section className="relative bg-[#001F0F] py-32" id="experience">
-          {/* Celtic-inspired background pattern */}
-          <div className="absolute inset-0 opacity-5 bg-[url('/celtic-pattern.png')] bg-repeat"></div>
+          {/* Celtic shamrock pattern background */}
+          <div className="absolute inset-0 celtic-shamrock"></div>
           
           <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
             <div className="text-center mb-20">
@@ -572,10 +592,10 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Events Section - displaying upcoming events */}
         <section className="relative bg-[#001F0F] py-32" id="events">
-          {/* Celtic-inspired background pattern */}
-          <div className="absolute inset-0 opacity-5 bg-[url('/celtic-pattern.png')] bg-repeat"></div>
-          
+          {/* Change from celtic-interlace to celtic-shamrock */}
+          <div className="absolute inset-0 celtic-shamrock"></div>
           <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
             <div className="text-center mb-20">
               <div className="flex items-center justify-center gap-4 mb-6">
@@ -662,10 +682,10 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Jobs Section - employment application form */}
         <section className="relative bg-black py-32" id="jobs">
-          {/* Celtic-inspired background pattern */}
-          <div className="absolute inset-0 opacity-5 bg-[url('/celtic-pattern.png')] bg-repeat"></div>
-          
+          {/* Celtic knot background */}
+          <div className="absolute inset-0 celtic-knot"></div>
           <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
             <div className="text-center mb-20">
               <div className="flex items-center justify-center gap-4 mb-6">
@@ -711,12 +731,13 @@ export default function Page() {
                     </div>
                     <div>
                       <Label htmlFor="phone" className="text-[#E4A853] text-lg mb-2 block">Phone Number</Label>
-                      <InputMask 
+                      <InputMask
                         mask="(999) 999-9999"
                         id="phone"
-                        className="w-full bg-black/50 border-2 border-[#E4A853]/20 text-white h-12 text-lg rounded-lg px-4 focus:border-[#E4A853] focus:ring-[#E4A853]"
-                        placeholder="(573) XXX-XXXX"
+                        name="phone"
+                        placeholder="(573) 555-0123"
                         required
+                        className="w-full bg-black/50 border-[#E4A853]/20 text-white text-lg rounded-lg focus:ring-[#E4A853] focus:border-[#E4A853]"
                       />
                     </div>
                   </div>
@@ -751,12 +772,13 @@ export default function Page() {
                     <Label htmlFor="position" className="text-[#E4A853] text-lg mb-2 block">Position Interest</Label>
                     <select 
                       id="position" 
+                      defaultValue="" 
                       className="w-full appearance-none bg-black/50 border-2 border-[#E4A853]/20 text-white h-12 text-lg rounded-lg px-4 
                         focus:border-[#E4A853] focus:ring-[#E4A853] transition-all duration-300
                         hover:border-[#E4A853] cursor-pointer"
                       required
                     >
-                      <option value="" disabled selected className="text-gray-400">Select a position</option>
+                      <option value="" disabled className="text-gray-400">Select a position</option>
                       <option value="cook" className="bg-[#001F0F] hover:bg-[#094023]">Cook</option>
                       <option value="bartender" className="bg-[#001F0F] hover:bg-[#094023]">Bartender</option>
                       <option value="waitstaff" className="bg-[#001F0F] hover:bg-[#094023]">Waitstaff</option>
@@ -837,8 +859,12 @@ export default function Page() {
           </div>
         </section>
 
-        <section className="bg-black py-24" id="social">
-          <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+        {/* Social Media Section - Facebook feed integration */}
+        <section className="relative bg-black py-24" id="social">
+          {/* Add Celtic knot background */}
+          <div className="absolute inset-0 celtic-knot"></div>
+          
+          <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
             <h2 className="font-playfair mb-12 text-center text-4xl font-bold text-white">Follow Us on Facebook</h2>
             <FacebookPosts />
             <div className="mt-12 text-center">
@@ -853,10 +879,10 @@ export default function Page() {
         </section>
       </main>
 
+      {/* Footer with business information */}
       <footer className="relative bg-[#001F0F] text-white py-24">
-        {/* Celtic-inspired background pattern */}
-        <div className="absolute inset-0 opacity-5 bg-[url('/celtic-pattern.png')] bg-repeat"></div>
-        
+        {/* Celtic weave background */}
+        <div className="absolute inset-0 celtic-weave"></div>
         <div className="container max-w-7xl mx-auto px-4 md:px-6 lg:px-8 relative">
           {/* Logo and Phone Section */}
           <div className="text-center mb-20">
@@ -870,10 +896,11 @@ export default function Page() {
             <div className="flex items-center justify-center mb-8">
               <Image
                 alt="Oh Tommy's Pub & Grill Logo"
-                className="h-24 w-auto md:h-32 transition-transform duration-300 hover:scale-105"
-                height="128"
+                className="h-24 w-auto md:h-32"
+                height={128}
+                width={400}
                 src="/images/ohtommys-bare.png"
-                width="400"
+                style={{ height: 'auto', maxHeight: '128px', width: 'auto' }}
               />
             </div>
 
@@ -995,6 +1022,7 @@ export default function Page() {
         </div>
       </footer>
 
+      {/* Global styles for fonts and animations */}
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant:wght@400;600&family=Great+Vibes&family=Irish+Grover&display=swap');
 
@@ -1030,6 +1058,71 @@ export default function Page() {
           to {
             transform: translateY(0);
           }
+        }
+
+        .celtic-pattern {
+          background-color: #001F0F;
+          opacity: 0.05;
+          background-image: 
+            linear-gradient(30deg, #E4A853 12%, transparent 12.5%, transparent 87%, #E4A853 87.5%, #E4A853),
+            linear-gradient(150deg, #E4A853 12%, transparent 12.5%, transparent 87%, #E4A853 87.5%, #E4A853),
+            linear-gradient(30deg, #E4A853 12%, transparent 12.5%, transparent 87%, #E4A853 87.5%, #E4A853),
+            linear-gradient(150deg, #E4A853 12%, transparent 12.5%, transparent 87%, #E4A853 87.5%, #E4A853),
+            linear-gradient(60deg, #E4A85377 25%, transparent 25.5%, transparent 75%, #E4A85377 75%, #E4A85377),
+            linear-gradient(60deg, #E4A85377 25%, transparent 25.5%, transparent 75%, #E4A85377 75%, #E4A85377);
+          background-size: 80px 140px;
+          background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+        }
+
+        .celtic-knot {
+          background-color: #001F0F;
+          opacity: 0.05;
+          background-image: 
+            radial-gradient(circle at 100% 150%, #E4A853 24%, #001F0F 25%, #001F0F 28%, #E4A853 29%, #E4A853 36%, #001F0F 36%, #001F0F 40%, transparent 40%, transparent),
+            radial-gradient(circle at 0 150%, #E4A853 24%, #001F0F 25%, #001F0F 28%, #E4A853 29%, #E4A853 36%, #001F0F 36%, #001F0F 40%, transparent 40%, transparent),
+            radial-gradient(circle at 50% 100%, #E4A853 10%, #001F0F 11%, #001F0F 23%, #E4A853 24%, #E4A853 30%, #001F0F 31%, #001F0F 43%, transparent 43%, transparent),
+            radial-gradient(circle at 100% 50%, #E4A853 5%, #001F0F 6%, #001F0F 15%, #E4A853 16%, #E4A853 20%, #001F0F 21%, #001F0F 30%, transparent 30%, transparent),
+            radial-gradient(circle at 0 50%, #E4A853 5%, #001F0F 6%, #001F0F 15%, #E4A853 16%, #E4A853 20%, #001F0F 21%, #001F0F 30%, transparent 30%, transparent);
+          background-size: 100px 50px;
+        }
+
+        .celtic-weave {
+          background-color: #001F0F;
+          opacity: 0.05;
+          background-image: 
+            linear-gradient(45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0),
+            linear-gradient(-45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0),
+            linear-gradient(45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0),
+            linear-gradient(-45deg, #E4A853 12%, transparent 0, transparent 88%, #E4A853 0);
+          background-size: 40px 40px;
+          background-position: 0 0, 0 0, 20px 20px, 20px 20px;
+        }
+
+        /* Celtic Shamrock Pattern for Experience section */
+        .celtic-shamrock {
+          background-color: #001F0F;
+          opacity: 0.05;
+          background-image: 
+            radial-gradient(circle at 50% 50%, #E4A853 2px, transparent 2px),
+            radial-gradient(circle at calc(50% + 10px) calc(50% - 10px), #E4A853 2px, transparent 2px),
+            radial-gradient(circle at calc(50% - 10px) calc(50% - 10px), #E4A853 2px, transparent 2px),
+            radial-gradient(circle at calc(50% + 10px) calc(50% + 10px), #E4A853 2px, transparent 2px),
+            radial-gradient(circle at calc(50% - 10px) calc(50% + 10px), #E4A853 2px, transparent 2px);
+          background-size: 40px 40px;
+          background-position: 0 0;
+        }
+
+        /* Celtic Interlace Pattern for Events section */
+        .celtic-interlace {
+          background-color: #001F0F;
+          opacity: 0.05;
+          background-image: 
+            linear-gradient(45deg, #E4A853 2px, transparent 2px),
+            linear-gradient(-45deg, #E4A853 2px, transparent 2px),
+            linear-gradient(45deg, transparent 2px, #E4A853 3px, transparent 3px),
+            linear-gradient(-45deg, transparent 2px, #E4A853 3px, transparent 3px);
+          background-size: 30px 30px;
+          background-position: 0 0, 0 0, 15px 15px, 15px 15px;
         }
       `}</style>
     </div>
