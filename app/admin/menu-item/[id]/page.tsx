@@ -1,7 +1,6 @@
 'use client';
 
 import { MenuCategory, MenuItem } from '@/app/types/menu.types';
-import { PageProps } from '@/app/types/next.types';
 import ItemSidesManager from '@/components/menu/item-sides-manager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,11 +20,17 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+type MenuItemPageProps = {
+  params: {
+    id: string;
+  };
+};
+
 interface ExtendedMenuItem extends MenuItem {
   is_active: boolean;
 }
 
-export default function MenuItemPage({ params }: PageProps) {
+export default function MenuItemPage({ params }: MenuItemPageProps) {
   const router = useRouter();
   const [menuItem, setMenuItem] = useState<ExtendedMenuItem | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
