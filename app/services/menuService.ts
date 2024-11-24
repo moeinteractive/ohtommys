@@ -152,4 +152,15 @@ export const menuService = {
 
     if (error) throw new Error(`Error deleting side options: ${error.message}`);
   },
+
+  async createMenuItem(data: Partial<MenuItem>): Promise<MenuItem> {
+    const { data: result, error } = await supabase
+      .from('menu_items')
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) throw new Error(`Error creating menu item: ${error.message}`);
+    return result;
+  },
 };

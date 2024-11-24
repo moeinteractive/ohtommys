@@ -7,11 +7,8 @@ import {
   MenuCategory,
   MenuContent,
   MenuItem,
-  MenuItemExtra,
-  MenuItemSize,
   Side,
   SideCategory,
-  TransformedMenuItemSide,
 } from '@/app/types/menu.types';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Footer } from '@/components/footer2';
@@ -182,9 +179,9 @@ export default function FullMenuPage() {
       // Set states if we have data
       if (menuData) {
         console.log('Setting menu items:', menuData);
-        const transformedMenuData: MenuItem[] = menuData.map((item: any) => {
+        const transformedMenuData = menuData.map((item: any): MenuItem => {
           // Transform menu item sides
-          const transformedSides: TransformedMenuItemSide[] =
+          const transformedSides =
             item.menu_item_sides?.map((menuItemSide: any) => ({
               id: menuItemSide.id,
               menu_item_id: item.id,
@@ -193,7 +190,7 @@ export default function FullMenuPage() {
               side: {
                 id: menuItemSide.side.id,
                 name: menuItemSide.side.name,
-                description: menuItemSide.side.description,
+                description: menuItemSide.side.description || '',
                 price: menuItemSide.side.price,
                 category: menuItemSide.side.category as SideCategory,
                 is_active: menuItemSide.side.is_active ?? true,
@@ -201,7 +198,7 @@ export default function FullMenuPage() {
             })) || [];
 
           // Transform menu sizes
-          const transformedSizes: MenuItemSize[] =
+          const transformedSizes =
             item.menu_sizes?.map((size: any) => ({
               id: size.id,
               menu_item_id: item.id,
@@ -211,7 +208,7 @@ export default function FullMenuPage() {
             })) || [];
 
           // Transform menu extras
-          const transformedExtras: MenuItemExtra[] =
+          const transformedExtras =
             item.menu_extras?.map((extra: any) => ({
               id: extra.id,
               menu_item_id: item.id,
@@ -224,11 +221,13 @@ export default function FullMenuPage() {
           return {
             id: item.id,
             name: item.name,
-            description: item.description,
+            description: item.description || '',
             category: item.category as MenuCategory,
             price: item.price?.toString() || null,
             image_url: item.image_url || null,
-            is_special: false,
+            is_special: item.is_special || false,
+            created_at: item.created_at || new Date().toISOString(),
+            updated_at: item.updated_at || new Date().toISOString(),
             menu_item_sides: transformedSides,
             menu_sizes: transformedSizes,
             menu_extras: transformedExtras,
@@ -328,7 +327,10 @@ export default function FullMenuPage() {
             <div className="mt-2">
               <div className="flex flex-wrap gap-x-6 gap-y-1">
                 {item.menu_sizes.map((size) => (
-                  <div key={size.id} className="flex items-center gap-2">
+                  <div
+                    key={`${item.id}-${size.size_name}`}
+                    className="flex items-center gap-2"
+                  >
                     <span className="text-gray-300 text-sm">
                       {size.size_name}
                     </span>
@@ -346,7 +348,10 @@ export default function FullMenuPage() {
             <div className="mt-2">
               <div className="flex flex-wrap gap-x-6 gap-y-1">
                 {item.menu_extras.map((extra) => (
-                  <div key={extra.id} className="flex items-center gap-2">
+                  <div
+                    key={`${item.id}-${extra.extra_name}`}
+                    className="flex items-center gap-2"
+                  >
                     <span className="text-gray-300 text-sm">
                       + {extra.extra_name}
                     </span>
@@ -363,25 +368,22 @@ export default function FullMenuPage() {
           {item.menu_item_sides && item.menu_item_sides.length > 0 && (
             <div className="mt-2">
               <div className="flex flex-wrap gap-x-6 gap-y-1">
-                {item.menu_item_sides?.map((menuItemSide) => {
-                  if (!menuItemSide.side) return null;
-                  return (
-                    <div
-                      key={menuItemSide.id}
-                      className="flex items-center gap-2"
-                    >
-                      <span className="text-gray-300 text-sm">
-                        {menuItemSide.side.name}
-                      </span>
-                      {menuItemSide.side.price !== null &&
-                        menuItemSide.side.price > 0 && (
-                          <span className="text-[#E4A853] text-sm font-medium">
-                            +${formatPrice(menuItemSide.side.price)}
-                          </span>
-                        )}
-                    </div>
-                  );
-                })}
+                {item.menu_item_sides.map((menuItemSide) => (
+                  <div
+                    key={`${item.id}-${menuItemSide.side_id}`}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="text-gray-300 text-sm">
+                      {menuItemSide.side.name}
+                    </span>
+                    {menuItemSide.side.price !== null &&
+                      menuItemSide.side.price > 0 && (
+                        <span className="text-[#E4A853] text-sm font-medium">
+                          +${formatPrice(menuItemSide.side.price)}
+                        </span>
+                      )}
+                  </div>
+                ))}
               </div>
             </div>
           )}

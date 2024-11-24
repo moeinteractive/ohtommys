@@ -25,7 +25,7 @@ export const createClient = async () => {
           throw error;
         }
       },
-      remove(name: string, options: CookieOptions) {
+      remove(name: string) {
         try {
           cookieStore.delete(name);
         } catch (error) {

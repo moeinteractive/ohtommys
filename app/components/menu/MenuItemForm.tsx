@@ -29,13 +29,28 @@ import { useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import * as z from 'zod';
 
+interface MenuItemSideForm {
+  side_id: string;
+  is_default: boolean;
+}
+
+interface MenuItemSizeForm {
+  size_name: string;
+  price: string;
+}
+
+interface MenuItemExtraForm {
+  extra_name: string;
+  price: string;
+}
+
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  description: z.string().optional().nullable(),
-  price: z.string().optional(),
+  description: z.string().nullable(),
+  price: z.string().nullable(),
   category: z.nativeEnum(MENU_CATEGORIES),
-  is_special: z.boolean().optional().default(false),
-  day: z.nativeEnum(DAYS_OF_WEEK).optional().nullable(),
+  is_special: z.boolean().default(false),
+  day: z.nativeEnum(DAYS_OF_WEEK).nullable(),
   menu_item_sides: z
     .array(
       z.object({
@@ -86,25 +101,32 @@ export default function MenuItemForm({
     defaultValues: {
       name: item?.name || '',
       description: item?.description || '',
-      price: item?.price ? String(item?.price) : '',
-      category: item?.category || defaultCategory || undefined,
+      price: item?.price ? String(item.price) : '',
+      category:
+        (item?.category as MenuCategory) || defaultCategory || undefined,
       is_special: item?.is_special || false,
       day: item?.day || undefined,
       menu_item_sides:
-        item?.menu_item_sides?.map((side) => ({
-          side_id: side.side_id,
-          is_default: side.is_default ?? false,
-        })) || [],
+        item?.menu_item_sides?.map(
+          (side): MenuItemSideForm => ({
+            side_id: side.side_id,
+            is_default: side.is_default ?? false,
+          })
+        ) || [],
       menu_sizes:
-        item?.menu_sizes?.map((size) => ({
-          size_name: size.size_name,
-          price: String(size.price),
-        })) || [],
+        item?.menu_sizes?.map(
+          (size): MenuItemSizeForm => ({
+            size_name: size.size_name,
+            price: String(size.price),
+          })
+        ) || [],
       menu_extras:
-        item?.menu_extras?.map((extra) => ({
-          extra_name: extra.extra_name,
-          price: String(extra.price),
-        })) || [],
+        item?.menu_extras?.map(
+          (extra): MenuItemExtraForm => ({
+            extra_name: extra.extra_name,
+            price: String(extra.price),
+          })
+        ) || [],
     },
   });
 

@@ -1,7 +1,9 @@
 'use client';
 
+import { menuService } from '@/app/services/menuService';
 import {
   MenuCategory,
+  MenuItem,
   MenuItemWithRelations,
   Side,
 } from '@/app/types/menu.types';
@@ -19,7 +21,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/lib/supabase';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -31,6 +32,16 @@ interface MenuItemFormProps {
   categories: MenuCategory[];
 }
 
+interface MenuItemFormData {
+  name: string;
+  description: string;
+  category: MenuCategory;
+  price: string;
+  sizes: Array<{ size_name: string; price: string }>;
+  extras: Array<{ extra_name: string; price: string }>;
+  selectedSides: string[];
+}
+
 export function MenuItemForm({
   item,
   availableSides,
@@ -38,7 +49,7 @@ export function MenuItemForm({
   onSave,
   categories,
 }: MenuItemFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MenuItemFormData>({
     name: item?.name || '',
     description: item?.description || '',
     category: item?.category || categories[0],
@@ -75,116 +86,114 @@ export function MenuItemForm({
     e.preventDefault();
 
     try {
-      const menuItemData = {
-        name: formData.name,
-        description: formData.description,
+      if (!formData.name.trim()) {
+        toast({
+          title: 'Validation Error',
+          description: 'Name is required',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (formData.price && isNaN(parseFloat(formData.price))) {
+        toast({
+          title: 'Validation Error',
+          description: 'Price must be a valid number',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const menuItemData: Partial<MenuItem> = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
         category: formData.category,
-        price: formData.price ? parseFloat(formData.price.toString()) : null,
+        price: formData.price ? parseFloat(formData.price) : null,
         is_special: false,
+        image_url: item?.image_url || null,
       };
 
-      let result;
+      let menuItem: MenuItem;
+      const now = new Date().toISOString();
+
       if (item) {
-        // Update existing item
-        const { data, error } = await supabase
-          .from('menu_items')
-          .update(menuItemData)
-          .eq('id', item.id)
-          .select()
-          .single();
+        await menuService.updateMenuItem(item.id, menuItemData);
+        menuItem = {
+          ...item,
+          ...menuItemData,
+          created_at: item.created_at,
+          updated_at: now,
+        };
 
-        if (error) throw error;
-        result = data;
-
-        // Always delete existing relationships first
         await Promise.all([
-          // Delete all existing sides relationships
-          supabase.from('menu_item_sides').delete().eq('menu_item_id', item.id),
-          // Delete all existing sizes
-          supabase.from('menu_sizes').delete().eq('menu_item_id', item.id),
-          // Delete all existing extras
-          supabase.from('menu_extras').delete().eq('menu_item_id', item.id),
+          menuService.deleteSideOptions(item.id),
+          menuService.deleteSizeOptions(item.id),
+          menuService.deleteExtraOptions(item.id),
         ]);
       } else {
-        // Create new item
-        const { data, error } = await supabase
-          .from('menu_items')
-          .insert(menuItemData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        result = data;
-      }
-
-      // Only create new relationships if there are any to create
-      const promises = [];
-
-      // Handle sides relationships
-      if (formData.selectedSides.length > 0) {
-        const sideRelations = formData.selectedSides.map((sideId) => ({
-          menu_item_id: result.id,
-          side_id: sideId,
-          is_default: true,
-        }));
-
-        promises.push(supabase.from('menu_item_sides').insert(sideRelations));
-      }
-
-      // Handle sizes
-      if (formData.sizes.length > 0) {
-        const sizeRecords = formData.sizes.map((size) => ({
-          menu_item_id: result.id,
-          size_name: size.size_name,
-          price: parseFloat(size.price),
-        }));
-
-        promises.push(supabase.from('menu_sizes').insert(sizeRecords));
-      }
-
-      // Handle extras
-      if (formData.extras.length > 0) {
-        const extraRecords = formData.extras.map((extra) => ({
-          menu_item_id: result.id,
-          extra_name: extra.extra_name,
-          price: parseFloat(extra.price),
-        }));
-
-        promises.push(supabase.from('menu_extras').insert(extraRecords));
-      }
-
-      // Wait for all relationship creations to complete
-      if (promises.length > 0) {
-        const results = await Promise.all(promises);
-        // Check for errors in results
-        results.forEach((res) => {
-          if (res.error) throw res.error;
+        menuItem = await menuService.createMenuItem({
+          ...menuItemData,
+          created_at: now,
+          updated_at: now,
         });
       }
 
-      // Transform the result to match MenuItemWithRelations
+      if (formData.selectedSides.length > 0) {
+        await menuService.addSideOptions(
+          menuItem.id,
+          formData.selectedSides.map((sideId) => ({
+            side_id: sideId,
+            is_default: true,
+          }))
+        );
+      }
+
+      if (formData.sizes.length > 0) {
+        await menuService.addSizeOptions(
+          menuItem.id,
+          formData.sizes.map((size) => ({
+            menu_item_id: menuItem.id,
+            size_name: size.size_name,
+            price: parseFloat(size.price),
+            created_at: now,
+          }))
+        );
+      }
+
+      if (formData.extras.length > 0) {
+        await menuService.addExtraOptions(
+          menuItem.id,
+          formData.extras.map((extra) => ({
+            menu_item_id: menuItem.id,
+            extra_name: extra.extra_name,
+            price: parseFloat(extra.price),
+            created_at: now,
+          }))
+        );
+      }
+
       const transformedResult: MenuItemWithRelations = {
-        id: result.id,
-        name: result.name,
-        description: result.description,
-        category: result.category as MenuCategory,
-        price: result.price?.toString() || null,
-        image_url: result.image_url,
-        is_special: result.is_special || false,
+        id: menuItem.id,
+        name: menuItem.name,
+        description: menuItem.description,
+        category: menuItem.category,
+        price: menuItem.price?.toString() || null,
+        image_url: menuItem.image_url,
+        is_special: menuItem.is_special,
+        created_at: menuItem.created_at,
+        updated_at: menuItem.updated_at,
         sides: formData.selectedSides
-          .map((sideId) => availableSides.find((side) => side.id === sideId))
+          .map((sideId) => availableSides.find((s) => s.id === sideId))
           .filter((side): side is Side => side !== undefined),
         sizes: formData.sizes.map((size) => ({
           size_name: size.size_name,
-          price: size.price.toString(),
+          price: size.price,
         })),
         extras: formData.extras.map((extra) => ({
           extra_name: extra.extra_name,
-          price: extra.price.toString(),
+          price: extra.price,
         })),
         specials: [],
-        created_at: result.created_at || new Date().toISOString(),
-        updated_at: result.updated_at || new Date().toISOString(),
       };
 
       toast({
@@ -198,7 +207,10 @@ export function MenuItemForm({
       console.error('Error saving menu item:', error);
       toast({
         title: 'Error',
-        description: `Failed to ${item ? 'update' : 'create'} menu item`,
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
         variant: 'destructive',
       });
     }

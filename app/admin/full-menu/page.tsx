@@ -103,15 +103,17 @@ async function getMenuItems() {
       (item): MenuItemWithRelations => ({
         id: item.id,
         name: item.name,
-        description: item.description,
+        description: item.description || '',
         category: item.category as MenuCategory,
         price: item.price?.toString() || null,
         image_url: item.image_url,
         is_special: item.is_special || false,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
         sides: item.menu_item_sides.map((menuItemSide) => ({
           id: menuItemSide.side.id,
           name: menuItemSide.side.name,
-          description: menuItemSide.side.description,
+          description: menuItemSide.side.description || '',
           price: menuItemSide.side.price,
           category: menuItemSide.side.category as SideCategory,
           is_active: menuItemSide.side.is_active,
@@ -125,8 +127,6 @@ async function getMenuItems() {
           price: extra.price.toString(),
         })),
         specials: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       })
     );
 

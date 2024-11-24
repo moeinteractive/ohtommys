@@ -74,7 +74,7 @@ export interface MenuItemSide {
   side: Side;
 }
 
-export type MenuItem = {
+export interface MenuItem {
   id: string;
   name: string;
   description: string;
@@ -82,10 +82,23 @@ export type MenuItem = {
   price: string | number | null;
   image_url: string | null;
   is_special: boolean;
-  menu_item_sides: TransformedMenuItemSide[];
-  menu_sizes: MenuItemSize[];
-  menu_extras: MenuItemExtra[];
-};
+  created_at: string;
+  updated_at: string;
+  day?: DayOfWeek | null;
+  menu_item_sides?: Array<{
+    side_id: string;
+    is_default: boolean;
+    side: Side;
+  }>;
+  menu_sizes?: Array<{
+    size_name: string;
+    price: string;
+  }>;
+  menu_extras?: Array<{
+    extra_name: string;
+    price: string;
+  }>;
+}
 
 export interface MenuSpecial {
   id: string;
@@ -145,12 +158,25 @@ export interface ApiResponse<T> {
   error?: string;
 }
 // Additional types needed by services
-export type SizeOption = Omit<MenuItemSize, 'id'>;
-export type ExtraOption = Omit<MenuItemExtra, 'id'>;
+export type SizeOption = {
+  menu_item_id: string;
+  size_name: string;
+  price: number;
+  created_at: string;
+};
+
+export type ExtraOption = {
+  menu_item_id: string;
+  extra_name: string;
+  price: number;
+  created_at: string;
+};
+
 export type NewMenuItem = Omit<MenuItem, 'id' | 'created_at' | 'updated_at'>;
 
 // Update MenuItemWithRelations to include proper typing for specials
-export interface MenuItemWithRelations extends MenuItem {
+export interface MenuItemWithRelations extends Omit<MenuItem, 'price'> {
+  price: string | null;
   sizes: Array<{ size_name: string; price: string }>;
   extras: Array<{ extra_name: string; price: string }>;
   sides: Side[];

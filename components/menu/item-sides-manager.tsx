@@ -1,7 +1,6 @@
 'use client';
 
-import type { MenuItemSide } from '@/app/types/menu.types';
-import type { Side } from '@/app/types/side.types';
+import { CategorySide, MenuItemSide, Side } from '@/app/types/menu.types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -15,13 +14,6 @@ import {
 import { supabase } from '@/lib/supabase';
 import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-interface CategorySide {
-  id: string;
-  category: string;
-  side_id: string;
-  is_default?: boolean;
-}
 
 type SideRelation = MenuItemSide | CategorySide;
 
