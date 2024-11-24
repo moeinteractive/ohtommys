@@ -23,11 +23,7 @@ interface ExtendedMenuItem extends MenuItem {
   is_active: boolean;
 }
 
-export default function MenuItemPage({
-  params,
-}: {
-  params: { id: string };
-} & { searchParams?: { [key: string]: string | string[] | undefined } }) {
+export default function MenuItemPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [menuItem, setMenuItem] = useState<ExtendedMenuItem | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
