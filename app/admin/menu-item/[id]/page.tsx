@@ -1,6 +1,7 @@
 'use client';
 
 import { MenuCategory, MenuItem } from '@/app/types/menu.types';
+import { PageProps } from '@/app/types/next.types';
 import ItemSidesManager from '@/components/menu/item-sides-manager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -23,49 +25,47 @@ interface ExtendedMenuItem extends MenuItem {
   is_active: boolean;
 }
 
-type Props = {
-  params: {
-    id: string;
-  };
-};
-
-export default function MenuItemPage({ params }: Props) {
+export default function MenuItemPage({ params }: PageProps) {
   const router = useRouter();
   const [menuItem, setMenuItem] = useState<ExtendedMenuItem | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadData = useCallback(async () => {
-    // Load menu item
-    const { data: menuItemData, error: menuItemError } = await supabase
-      .from('menu_items')
-      .select('*')
-      .eq('id', params.id)
-      .single();
+    try {
+      // Load menu item
+      const { data: menuItemData, error: menuItemError } = await supabase
+        .from('menu_items')
+        .select('*')
+        .eq('id', params.id)
+        .single();
 
-    if (menuItemError) {
-      console.error('Error loading menu item:', menuItemError);
-      return;
-    }
+      if (menuItemError) throw menuItemError;
 
-    if (menuItemData) setMenuItem(menuItemData);
+      if (menuItemData) setMenuItem(menuItemData);
 
-    // Load categories
-    const { data: categoriesData, error: categoriesError } = await supabase
-      .from('menu_items')
-      .select('category')
-      .not('category', 'is', null)
-      .order('category');
+      // Load categories
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('menu_items')
+        .select('category')
+        .not('category', 'is', null)
+        .order('category');
 
-    if (categoriesError) {
-      console.error('Error loading categories:', categoriesError);
-      return;
-    }
+      if (categoriesError) throw categoriesError;
 
-    if (categoriesData) {
-      const uniqueCategories = Array.from(
-        new Set(categoriesData.map((item) => item.category))
-      );
-      setCategories(uniqueCategories);
+      if (categoriesData) {
+        const uniqueCategories = Array.from(
+          new Set(categoriesData.map((item) => item.category))
+        );
+        setCategories(uniqueCategories);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load menu item data',
+        variant: 'destructive',
+      });
     }
   }, [params.id]);
 
@@ -76,17 +76,30 @@ export default function MenuItemPage({ params }: Props) {
   const updateMenuItem = async () => {
     if (!menuItem) return;
 
-    const { error } = await supabase
-      .from('menu_items')
-      .update(menuItem)
-      .eq('id', params.id);
+    try {
+      setIsLoading(true);
+      const { error } = await supabase
+        .from('menu_items')
+        .update(menuItem)
+        .eq('id', params.id);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Menu item updated successfully',
+      });
+      router.push('/admin/full-menu');
+    } catch (error) {
       console.error('Error updating menu item:', error);
-      return;
+      toast({
+        title: 'Error',
+        description: 'Failed to update menu item',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    router.push('/admin/full-menu');
   };
 
   const handleCategoryChange = (value: string) => {
@@ -120,9 +133,9 @@ export default function MenuItemPage({ params }: Props) {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Menu
           </Button>
-          <Button onClick={updateMenuItem}>
+          <Button onClick={updateMenuItem} disabled={isLoading}>
             <Save className="h-4 w-4 mr-2" />
-            Save Changes
+            {isLoading ? 'Saving...' : 'Save Changes'}
           </Button>
         </nav>
 
