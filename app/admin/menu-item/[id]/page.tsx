@@ -23,15 +23,14 @@ interface ExtendedMenuItem extends MenuItem {
   is_active: boolean;
 }
 
+// Updated PageProps interface to match Next.js 15 requirements
 type PageProps = {
   params: {
     id: string;
   };
-  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
-export default function MenuItemPage(props: PageProps) {
-  const { params } = props;
+export default function MenuItemPage({ params }: PageProps) {
   const router = useRouter();
   const [menuItem, setMenuItem] = useState<ExtendedMenuItem | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
