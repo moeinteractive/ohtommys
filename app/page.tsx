@@ -3,6 +3,7 @@
 import { Footer } from '@/components/footer2';
 import { Header } from '@/components/header';
 import { Calendar } from '@/components/ui/calendar';
+import { CelticButton } from '@/components/ui/celtic-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Popover,
@@ -12,12 +13,12 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Beer, Calendar as CalendarIcon, Music, X } from 'lucide-react';
 import Image from 'next/image';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IMaskInput } from 'react-imask';
 
+import { EventsContent } from '@/app/components/events-content';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -29,6 +30,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Beer, Calendar as CalendarIcon, Music, X } from 'lucide-react';
 
 // Updated interfaces to match database schema
 interface FacebookPost {
@@ -38,392 +40,24 @@ interface FacebookPost {
   created_time: string;
 }
 
-// Updated business hours to match current requirements
-const getTodayHours = () => {
-  const today = new Date().getDay();
-
-  switch (today) {
-    case 0: // Sunday
-      return '12:00 PM - 8:00 PM';
-    case 1: // Monday
-    case 2: // Tuesday
-      return 'Closed';
-    case 3: // Wednesday
-    case 4: // Thursday
-    case 6: // Saturday
-      return '11:00 AM - 11:00 PM';
-    case 5: // Friday
-      return '11:00 AM - 12:00 AM';
-    default:
-      return '11:00 AM - 11:00 PM';
-  }
-};
-
-// Utility functions to get business hours and current day
-const getDayName = () => {
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-  return days[new Date().getDay()];
-};
-
-// Reusable custom button component with Celtic styling
-const CelticButton = ({
-  children,
-  onClick,
-  className = '',
-  type = 'button',
-  disabled = false,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-  type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-}) => {
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        relative overflow-hidden group
-        px-8 py-4 rounded-none
-        transition-all duration-300
-        ${
-          disabled
-            ? 'opacity-50 cursor-not-allowed'
-            : `
-              bg-[#3A725A] text-[#F5E6D3] 
-              hover:bg-[#458B6D]
-              border-2 border-[#F5E6D3]/30
-              hover:border-[#F5E6D3]/50
-              shadow-[0_2px_10px_rgba(0,0,0,0.1)]
-              hover:shadow-[0_4px_20px_rgba(0,0,0,0.15)]
-            `
-        }
-        ${className}
-      `}
-    >
-      {/* Border effect */}
-      <div className="absolute inset-[3px] border border-[#F5E6D3]/20 pointer-events-none" />
-
-      {/* Content */}
-      <div className="relative flex items-center justify-center gap-2">
-        <span className="font-serif text-xl md:text-2xl uppercase tracking-[0.1em] text-[#F5E6D3]">
-          {children}
-        </span>
-      </div>
-
-      {/* Decorative corners */}
-      <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#F5E6D3]/30" />
-      <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#F5E6D3]/30" />
-      <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#F5E6D3]/30" />
-      <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#F5E6D3]/30" />
-
-      {/* Enhanced shine effect */}
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{
-          background:
-            'linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-        }}
-      />
-    </button>
-  );
-};
-
-// Card component for displaying promotional content with Celtic styling
-const PromotionCard = ({
-  title,
-  mainText,
-  ctaText,
-  imageSrc,
-  onClick,
-}: {
-  title: string;
-  mainText: string;
-  ctaText: string;
-  imageSrc: string;
-  onClick?: () => void;
-}) => {
-  return (
-    <div className="relative group overflow-hidden rounded-xl">
-      {/* Main container with decorative border */}
-      <div className="relative border-2 border-[#E4A853]/30 bg-black/40 backdrop-blur-sm h-full p-1">
-        {/* Celtic corner decorations */}
-        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#E4A853]" />
-        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#E4A853]" />
-        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#E4A853]" />
-        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#E4A853]" />
-
-        {/* Content Container */}
-        <div className="h-full flex flex-col">
-          {/* Image Container */}
-          <div className="relative h-[300px]">
-            <Image
-              src={imageSrc}
-              alt={title}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            {/* Gradient overlay with reduced opacity */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          </div>
-
-          {/* Text Content */}
-          <div className="relative flex-grow flex flex-col p-8 bg-gradient-to-b from-black/90 to-[#001F0F]/90">
-            {/* Decorative line above title */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-0.5 bg-[#E4A853]" />
-
-            <h3 className="font-playfair mb-4 sm:mb-6 text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-[#F5E6D3] drop-shadow-lg animate-[fadeIn_1s_ease-out,slideUp_1s_ease-out]">
-              {title}
-            </h3>
-
-            <p className="font-cormorant mb-6 sm:mb-12 max-w-2xl mx-auto text-xl sm:text-2xl lg:text-3xl text-[#F5E6D3] drop-shadow-lg font-semibold leading-tight animate-[fadeIn_2s_ease-out,slideUp_2s_ease-out]">
-              {mainText}
-            </p>
-
-            {/* Custom styled button */}
-            <button
-              onClick={onClick}
-              className="relative overflow-hidden group/btn w-full bg-[#E4A853] hover:bg-[#c28d3a] 
-                       text-black font-bold py-4 px-8 rounded-lg transition-all duration-300 
-                       transform hover:scale-105 hover:shadow-xl"
-            >
-              <div className="absolute inset-0 border border-black/10 rounded-lg" />
-              <span className="relative font-playfair text-lg tracking-wider">
-                {ctaText}
-              </span>
-              <div
-                className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 
-                            transition-opacity duration-300 bg-gradient-to-r 
-                            from-transparent via-white/10 to-transparent"
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Update the SectionDivider component
-const SectionDivider = () => (
-  <div className="relative py-16 bg-[#001F0F]">
-    <div className="container mx-auto px-4">
-      <div className="relative flex items-center justify-center">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t-2 border-[#E4A853]/20"></div>
-        </div>
-        <div className="relative flex items-center gap-6 px-6 bg-[#001F0F]">
-          <div className="w-24 h-px bg-[#E4A853]"></div>
-          <div className="w-4 h-4 rotate-45 border-2 border-[#E4A853]"></div>
-          <div className="w-24 h-px bg-[#E4A853]"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Add this type for better organization
-type EventType = 'weekly' | 'special';
-
-// Update the getGridClass function in the EventsContent component
-const getGridClass = (itemCount: number) => {
-  // Base container classes
-  const baseClasses = 'grid gap-6 max-w-6xl mx-auto';
-
-  // Mobile-first approach
-  switch (itemCount) {
-    case 1:
-      return `${baseClasses} grid-cols-1 max-w-lg mx-auto`; // Single centered column
-    case 2:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2`; // 2 columns
-    case 3:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-3`; // 3 columns
-    case 4:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2`; // 2x2 grid
-    case 5:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`; // 3x2 grid with last 2 centered
-    case 6:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`; // Clean 3x2 grid
-    case 7:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`; // 3x3 with last one centered
-    case 8:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`; // 3x3 with last two centered
-    case 9:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-3 lg:grid-cols-3`; // Clean 3x3 grid
-    default:
-      return `${baseClasses} grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`; // Default to 3 columns
-  }
-};
-
-// First, add the Event type interface
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  event_date: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  is_recurring: boolean;
-  recurring_days: string[] | null;
+interface JobApplicationFormData {
+  name: string;
+  phone: string;
+  email: string;
+  startDate: string;
+  position: string;
+  availableDays: string[];
+  shifts: string[];
+  experience: string;
 }
 
-// Add this helper function to format recurring days
-const formatRecurringDays = (days: string[] | null) => {
-  if (!days || days.length === 0) return '';
-
-  // Capitalize first letter of each day
-  const formattedDays = days.map(
-    (day) => day.charAt(0).toUpperCase() + day.slice(1)
-  );
-
-  if (formattedDays.length <= 2) {
-    return formattedDays.join(' & ');
-  }
-
-  // For more than 2 days, use commas and '&'
-  const lastDay = formattedDays.pop();
-  return `${formattedDays.join(', ')} & ${lastDay}`;
-};
-
-// Update the EventsContent component
-const EventsContent = ({ type }: { type: EventType }) => {
-  const [allEvents, setAllEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch all events once when component mounts
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const { data: eventData, error } = await fetch('/api/events', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-cache',
-        }).then((res) => res.json());
-
-        if (error) {
-          console.error('Error loading events:', error);
-          return;
-        }
-
-        if (eventData) {
-          setAllEvents(eventData);
-        }
-      } catch (err) {
-        console.error('Error:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []); // Only fetch once when component mounts
-
-  // Filter events based on type without making additional API calls
-  const displayEvents = allEvents.filter((event) =>
-    type === 'weekly' ? event.is_recurring : !event.is_recurring
-  );
-
-  if (isLoading) {
-    return (
-      <div className="grid gap-6 mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl">
-        {[1, 2, 3].map((n) => (
-          <div
-            key={n}
-            className="bg-black/20 backdrop-blur-sm border-2 border-[#F5E6D3]/10 p-6 rounded-lg
-                     h-[300px] animate-pulse"
-          >
-            <div className="bg-[#E4A853]/20 w-24 h-6 rounded-md mb-4 mx-auto" />
-            <div className="bg-[#F5E6D3]/20 w-3/4 h-8 rounded-md mb-4 mx-auto" />
-            <div className="bg-[#F5E6D3]/20 w-1/2 h-6 rounded-md mb-4 mx-auto" />
-            <div className="bg-[#F5E6D3]/20 w-5/6 h-20 rounded-md mx-auto" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`grid gap-6 mx-auto max-w-6xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 ${
-        displayEvents.length === 5
-          ? '[&>*:nth-child(-n+3)]:lg:col-span-2 [&>*:nth-child(4)]:lg:col-start-2 [&>*:nth-child(4)]:lg:col-span-2 [&>*:nth-child(5)]:lg:col-start-4 [&>*:nth-child(5)]:lg:col-span-2'
-          : 'lg:grid-cols-3'
-      }`}
-    >
-      {displayEvents.map((event) => (
-        <motion.div
-          key={event.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{
-            scale: 1.02,
-            transition: { duration: 0.2 },
-          }}
-          className="bg-black/20 backdrop-blur-sm border-2 border-[#F5E6D3]/10 p-6 rounded-lg
-                   flex flex-col items-center text-center transition-all duration-300 
-                   hover:bg-black/30 hover:border-[#F5E6D3]/20 hover:shadow-lg 
-                   hover:shadow-[#E4A853]/5"
-        >
-          <div className="flex flex-wrap gap-2 justify-center mb-4">
-            {event.is_recurring ? (
-              event.recurring_days?.map((day) => (
-                <div
-                  key={day}
-                  className="bg-[#E4A853]/20 text-[#E4A853] px-3 py-1 rounded-md text-xs font-medium tracking-wider uppercase"
-                >
-                  {day}
-                </div>
-              ))
-            ) : (
-              <div className="bg-[#E4A853]/20 text-[#E4A853] px-3 py-1 rounded-md text-sm">
-                {format(new Date(event.event_date!), 'MMM dd')}
-              </div>
-            )}
-          </div>
-          <h3 className="text-2xl sm:text-xl lg:text-2xl font-playfair text-[#F5E6D3] mb-3">
-            {event.title}
-          </h3>
-          <p className="text-[#F5E6D3]/80 text-lg sm:text-base lg:text-lg mb-2">
-            {formatTime(event.start_time)} - {formatTime(event.end_time)}
-          </p>
-          <p className="text-[#F5E6D3]/60 text-base">{event.description}</p>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
-// Add the formatTime utility function if not already present
-const formatTime = (timeStr: string | null) => {
-  if (!timeStr) return '';
-  const [hours, minutes] = timeStr.split(':');
-  const date = new Date();
-  date.setHours(parseInt(hours), parseInt(minutes));
-  return format(date, 'h:mm a');
-};
-
-// Add this after the CelticButton component and before the PromotionCard component
-
+// Add this style block
 const overlayStyles = `
   .pub-background {
     background: 
       linear-gradient(rgba(0, 31, 15, 0.92), rgba(0, 31, 15, 0.94)),
-      url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
-      url('/images/wood-texture.jpg');  /* This is where the wood texture is used */
-    background-repeat: repeat, repeat, repeat;
+      url('/images/wood-texture.jpg');
+    background-repeat: repeat;
     position: fixed;
     inset: 0;
     z-index: -1;
@@ -441,88 +75,13 @@ const overlayStyles = `
     pointer-events: none;
     z-index: -1;
   }
-
-  .woven-overlay {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zm20.97 0l9.315 9.314-1.414 1.414L34.828 0h2.83zM22.344 0L13.03 9.314l1.414 1.414L25.172 0h-2.83zM32 0l12.142 12.142-1.414 1.414L30 .828 17.272 13.556l-1.414-1.414L28 0h4zM.284 0l28 28-1.414 1.414L0 2.544V0h.284zM0 5.373l25.456 25.455-1.414 1.415L0 8.2V5.374zm0 5.656l22.627 22.627-1.414 1.414L0 13.86v-2.83zm0 5.656l19.8 19.8-1.415 1.413L0 19.514v-2.83zm0 5.657l16.97 16.97-1.414 1.415L0 25.172v-2.83zM0 28l14.142 14.142-1.414 1.414L0 30.828V28zm0 5.657L11.314 44.97 9.9 46.386l-9.9-9.9v-2.828zm0 5.657L8.485 47.8 7.07 49.212 0 42.143v-2.83zm0 5.657l5.657 5.657-1.414 1.415L0 47.8v-2.83zm0 5.657l2.828 2.83-1.414 1.413L0 53.456v-2.83zM54.627 60L30 35.373 5.373 60H8.2L30 38.2 51.8 60h2.827zm-5.656 0L30 41.03 11.03 60h2.828L30 43.858 46.142 60h2.83zm-5.656 0L30 46.686 16.686 60h2.83L30 49.515 40.485 60h2.83zm-5.657 0L30 52.343 22.344 60h2.83L30 55.172 34.828 60h2.83zM32 60l-2-2-2 2h4zM59.716 0l-28 28 1.414 1.414L60 2.544V0h-.284zM60 5.373L34.544 30.828l1.414 1.414L60 8.2V5.374zm0 5.656L37.373 33.656l1.414 1.414L60 13.86v-2.83zm0 5.656l-19.8 19.8 1.415 1.413L60 19.514v-2.83zm0 5.657l-16.97 16.97 1.414 1.415L60 25.172v-2.83zM60 28L45.858 42.142l1.414 1.414L60 30.828V28zm0 5.657L48.686 44.97l1.415 1.415L60 42.143v-2.83zm0 5.657L51.515 47.8l1.414 1.414L60 47.8v-2.83zm0 5.657l-5.657 5.657 1.414 1.415L60 53.456v-2.83zM39.9 16.385l1.414-1.414L30 3.658 18.686 14.97l1.415 1.415 9.9-9.9 9.9 9.9zm-2.83 2.828l1.415-1.414L30 9.313 21.515 17.8l1.414 1.413 7.07-7.07 7.07 7.07zm-2.827 2.83l1.414-1.416L30 14.97l-5.657 5.657 1.414 1.415L30 17.8l4.242 4.242zm-2.83 2.827l1.414-1.414L30 20.626l-2.828 2.83 1.414 1.414L30 23.456l1.414 1.414zM56.87 59.414L58.284 58 30 29.716 1.716 58l1.414 1.414L30 32.544l26.87 26.87z' fill='%23E4A853' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    animation: fadeInOut 10s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  @keyframes fadeInOut {
-    0% { opacity: 0; }
-    50% { opacity: 0.15; }
-    100% { opacity: 0; }
-  }
-
-  /* Add these global styles */
-  html, body {
-    overflow-x: hidden;
-    width: 100%;
-    position: relative;
-  }
-
-  #__next {
-    overflow-x: hidden;
-    width: 100%;
-    position: relative;
-  }
 `;
-
-// Add this interface near the top with other interfaces
-interface JobApplicationFormData {
-  name: string;
-  phone: string;
-  email: string;
-  startDate: string;
-  position: string;
-  availableDays: string[];
-  shifts: string[];
-  experience: string;
-}
-
-// Then update the validateForm function to use this interface
-const validateForm = (data: JobApplicationFormData) => {
-  const errors: Partial<Record<keyof JobApplicationFormData, string>> = {};
-
-  if (!data.name.trim()) {
-    errors.name = 'Name is required';
-  }
-
-  if (!data.phone.replace(/[^0-9]/g, '').match(/^\d{10}$/)) {
-    errors.phone = 'Valid phone number is required';
-  }
-
-  if (!data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-    errors.email = 'Valid email is required';
-  }
-
-  if (!data.position) {
-    errors.position = 'Please select a position';
-  }
-
-  if (data.availableDays.length === 0) {
-    errors.availableDays = 'Please select at least one day';
-  }
-
-  if (data.shifts.length === 0) {
-    errors.shifts = 'Please select at least one shift';
-  }
-
-  if (!data.experience.trim()) {
-    errors.experience = 'Experience details are required';
-  }
-
-  return errors;
-};
 
 // Main page component
 export default function Page() {
-  const [mounted, setMounted] = React.useState(false);
-  const [date, setDate] = React.useState<Date>();
-  const [formStatus, setFormStatus] = React.useState<
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [date, setDate] = useState<Date | undefined>();
+  const [formStatus, setFormStatus] = useState<
     'idle' | 'submitting' | 'success' | 'error'
   >('idle');
   const [formError, setFormError] = React.useState<string>('');
@@ -531,6 +90,10 @@ export default function Page() {
   const [posts, setPosts] = React.useState<FacebookPost[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = React.useState(true);
   const [postsError, setPostsError] = React.useState<string | null>(null);
+  const [activeEventType, setActiveEventType] = React.useState<
+    'weekly' | 'special'
+  >('weekly');
+  const [, setAnimateButton] = React.useState<'weekly' | 'special'>('special');
 
   // Add removeHashtags function
   const removeHashtags = (message: string) => {
@@ -588,33 +151,33 @@ export default function Page() {
 
   // Update the handleSubmit function to use the correct type
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setFormStatus('submitting');
-    setFormError('');
-
-    const formData = new FormData(event.currentTarget);
-    const data: JobApplicationFormData = {
-      name: formData.get('name') as string,
-      phone: formData.get('phone') as string,
-      email: formData.get('email') as string,
-      startDate: date ? format(date, 'yyyy-MM-dd') : '',
-      position: formData.get('position') as string,
-      availableDays: formData.getAll('availableDays') as string[],
-      shifts: formData.getAll('shifts') as string[],
-      experience: formData.get('experience') as string,
-    };
-
-    const errors = validateForm(data);
-
-    if (Object.keys(errors).length > 0) {
-      setFormStatus('error');
-      setFormError('Please fill in all required fields correctly.');
-      return;
-    }
-
-    // Process valid form submission
     try {
+      event.preventDefault();
+
+      setFormStatus('submitting');
+      setFormError('');
+
+      const formData = new FormData(event.currentTarget);
+      const data: JobApplicationFormData = {
+        name: formData.get('name') as string,
+        phone: formData.get('phone') as string,
+        email: formData.get('email') as string,
+        startDate: date ? format(date, 'yyyy-MM-dd') : '',
+        position: formData.get('position') as string,
+        availableDays: formData.getAll('availableDays') as string[],
+        shifts: formData.getAll('shifts') as string[],
+        experience: formData.get('experience') as string,
+      };
+
+      const errors = validateForm(data);
+
+      if (Object.keys(errors).length > 0) {
+        setFormStatus('error');
+        setFormError('Please fill in all required fields correctly.');
+        return;
+      }
+
+      // Process valid form submission
       const response = await fetch('/api/submit-application', {
         method: 'POST',
         headers: {
@@ -638,26 +201,6 @@ export default function Page() {
     }
   };
 
-  // Remove unused utility functions or use them where needed
-  const hours = React.useMemo(() => {
-    const today = new Date().getDay();
-    switch (today) {
-      case 0: // Sunday
-        return '12:00 PM - 8:00 PM';
-      case 1: // Monday
-      case 2: // Tuesday
-        return 'Closed';
-      case 3: // Wednesday
-      case 4: // Thursday
-      case 6: // Saturday
-        return '11:00 AM - 11:00 PM';
-      case 5: // Friday
-        return '11:00 AM - 12:00 AM';
-      default:
-        return '11:00 AM - 11:00 PM';
-    }
-  }, []);
-
   // Handle mounting state
   React.useEffect(() => {
     setMounted(true);
@@ -680,22 +223,19 @@ export default function Page() {
     }
   }, []);
 
-  const [activeEventType, setActiveEventType] = React.useState<
-    'weekly' | 'special'
-  >('weekly');
-  const [animateButton, setAnimateButton] = React.useState<
-    'weekly' | 'special'
-  >('special');
-
   if (!mounted) {
     return null;
   }
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden">
+    <div className="min-h-screen relative">
       <style jsx global>
         {overlayStyles}
       </style>
+
+      <div className="pub-background" />
+      <div className="ambient-light" />
+      <div className="woven-overlay" />
 
       <Header />
       <main className="flex-1 relative w-full">
@@ -798,11 +338,6 @@ export default function Page() {
             </div>
           </div>
         </section>
-
-        {/* Add background elements before the Experience section */}
-        <div className="pub-background" />
-        <div className="ambient-light" />
-        <div className="woven-overlay" />
 
         {/* Experience Section */}
         <section className="relative py-32" id="experience">
@@ -1009,14 +544,14 @@ export default function Page() {
                       </div>
                     </CelticButton>
 
-                    {/* Pointing Hand - Responsive positioning */}
+                    {/* Pointing Hand - Adjusted positioning */}
                     {activeEventType === 'weekly' && (
-                      <div className="absolute -bottom-12 md:-bottom-16 -right-8 md:-right-16 animate-point-to-click">
+                      <div className="absolute -bottom-8 md:-bottom-12 -right-12 md:-right-20 animate-point-to-click">
                         <div className="relative">
                           <span className="text-[#E4A853] text-3xl md:text-4xl rotate-45">
                             👆
                           </span>
-                          <span className="absolute -top-12 md:-top-16 right-0 bg-[#2A4E45] text-[#F5E6D3] px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm whitespace-nowrap">
+                          <span className="absolute -top-10 md:-top-12 right-0 bg-[#2A4E45] text-[#F5E6D3] px-3 py-1 md:px-4 md:py-2 rounded-lg text-xs md:text-sm whitespace-nowrap">
                             Click to see more!
                           </span>
                         </div>
@@ -1707,6 +1242,45 @@ export default function Page() {
             15px 15px;
         }
       `}</style>
+
+      {/* Global styles for backgrounds */}
+      <style jsx global>
+        {overlayStyles}
+      </style>
     </div>
   );
 }
+
+const validateForm = (data: JobApplicationFormData) => {
+  const errors: Partial<Record<keyof JobApplicationFormData, string>> = {};
+
+  if (!data.name.trim()) {
+    errors.name = 'Name is required';
+  }
+
+  if (!data.phone.replace(/[^0-9]/g, '').match(/^\d{10}$/)) {
+    errors.phone = 'Valid phone number is required';
+  }
+
+  if (!data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    errors.email = 'Valid email is required';
+  }
+
+  if (!data.position) {
+    errors.position = 'Please select a position';
+  }
+
+  if (data.availableDays.length === 0) {
+    errors.availableDays = 'Please select at least one day';
+  }
+
+  if (data.shifts.length === 0) {
+    errors.shifts = 'Please select at least one shift';
+  }
+
+  if (!data.experience.trim()) {
+    errors.experience = 'Experience details are required';
+  }
+
+  return errors;
+};

@@ -17,6 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -34,7 +35,7 @@ const formSchema = z.object({
   is_active: z.boolean(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 type SideWithoutId = Omit<Side, 'id' | 'created_at' | 'updated_at'>;
 
@@ -47,7 +48,8 @@ const SideForm: React.FC<SideFormProps> = ({ side, onSuccess }) => {
     reset,
     control,
     formState: { errors },
-  } = useForm<SideFormData>({
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: side?.name || '',
       description: side?.description || '',

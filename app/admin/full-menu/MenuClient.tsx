@@ -1,7 +1,10 @@
 'use client';
 
-import { MenuCategory, MenuItemWithRelations } from '@/app/types/menu.types';
-import { Side } from '@/app/types/side.types';
+import {
+  MenuCategory,
+  MenuItemWithRelations,
+  Side,
+} from '@/app/types/menu.types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DeleteAlert } from '@/components/ui/delete-alert';

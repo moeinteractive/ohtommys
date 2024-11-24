@@ -1,5 +1,5 @@
 import { useToast } from '@/components/ui/use-toast';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { sideService } from '../services/sideService';
 import { Side } from '../types/menu.types';
 
@@ -9,7 +9,7 @@ export function useSides() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const loadSides = async () => {
+  const loadSides = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -27,7 +27,7 @@ export function useSides() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const addSide = async (newSide: Omit<Side, 'id'>) => {
     try {
@@ -102,7 +102,7 @@ export function useSides() {
 
   useEffect(() => {
     loadSides();
-  }, []);
+  }, [loadSides]);
 
   return {
     sides,

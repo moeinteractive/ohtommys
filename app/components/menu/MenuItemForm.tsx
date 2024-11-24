@@ -7,8 +7,8 @@ import {
   MenuCategory,
   MenuItem,
   MenuItemFormData,
+  Side,
 } from '@/app/types/menu.types';
-import { Side } from '@/app/types/side.types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';

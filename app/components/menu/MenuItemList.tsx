@@ -1,9 +1,9 @@
+import type { Side } from '@/app/types/menu.types';
 import {
   MenuItem,
   MenuItemFormData,
   MenuItemWithRelations,
 } from '@/app/types/menu.types';
-import type { Side } from '@/app/types/side.types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit2, Menu, Trash2 } from 'lucide-react';

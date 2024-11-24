@@ -9,20 +9,12 @@ import { Footer } from '@/components/footer2';
 import { Header } from '@/components/header';
 import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
-import {
-  Alegreya, // Elegant serif with Celtic feel
-  Crimson_Pro,
-  IM_Fell_English, // Classic, traditional serif
-} from 'next/font/google';
+import { Alegreya, Crimson_Pro } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 // Initialize fonts
-const titleFont = IM_Fell_English({
-  subsets: ['latin'],
-  weight: ['400'],
-});
 
 const headingFont = Alegreya({
   subsets: ['latin'],
@@ -52,26 +44,6 @@ interface RawSpecialData {
     is_special: boolean;
   };
 }
-
-// Update the style constants with more refined colors and textures
-const CORK_TEXTURE = `
-  background-color: #F5E6D3;
-  background-image: 
-    linear-gradient(45deg, #E4D5C3 25%, transparent 25%),
-    linear-gradient(-45deg, #E4D5C3 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #E4D5C3 75%),
-    linear-gradient(-45deg, transparent 75%, #E4D5C3 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-`;
-
-const POLAROID_STYLE = `
-  background: #FFFFFF;
-  padding: 12px 12px 48px 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transform: rotate(var(--rotation));
-  border: 1px solid #2A4E45;
-`;
 
 // Update the DayButton component
 const DayButton = ({

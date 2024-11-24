@@ -1,6 +1,9 @@
 import { AdminNav } from '@/app/components/admin/AdminNav';
-import { MenuCategory, MenuItemWithRelations } from '@/app/types/menu.types';
-import { SideCategory } from '@/app/types/side.types';
+import {
+  MenuCategory,
+  MenuItemWithRelations,
+  SideCategory,
+} from '@/app/types/menu.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import { Menu } from 'lucide-react';
