@@ -1,21 +1,19 @@
 import { supabase } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 
-// Define the params type
+// Define the params type with Promise
 type RouteParams = {
-  params: {
-    id: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
 };
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const resolvedParams = await params;
     const body = await request.json();
     const { data, error } = await supabase
       .from('sides')
       .update(body)
-      .eq('id', params.id)
+      .eq('id', resolvedParams.id)
       .select()
       .single();
 
@@ -28,10 +26,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const resolvedParams = await params;
     const { error } = await supabase
       .from('sides')
       .update({ is_active: false })
-      .eq('id', params.id);
+      .eq('id', resolvedParams.id);
 
     if (error) throw error;
     return NextResponse.json({ success: true });
