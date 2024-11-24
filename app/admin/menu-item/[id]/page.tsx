@@ -17,32 +17,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, Save } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-
-type MenuItemPageProps = {
-  params: {
-    id: string;
-  };
-};
 
 interface ExtendedMenuItem extends MenuItem {
   is_active: boolean;
 }
 
-export default function MenuItemPage({ params }: MenuItemPageProps) {
+export default function MenuItemPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id?.toString() || '';
   const [menuItem, setMenuItem] = useState<ExtendedMenuItem | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadData = useCallback(async () => {
+    if (!id) return;
+
     try {
       // Load menu item
       const { data: menuItemData, error: menuItemError } = await supabase
         .from('menu_items')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single();
 
       if (menuItemError) throw menuItemError;
@@ -72,7 +70,7 @@ export default function MenuItemPage({ params }: MenuItemPageProps) {
         variant: 'destructive',
       });
     }
-  }, [params.id]);
+  }, [id]);
 
   useEffect(() => {
     loadData();
@@ -86,7 +84,7 @@ export default function MenuItemPage({ params }: MenuItemPageProps) {
       const { error } = await supabase
         .from('menu_items')
         .update(menuItem)
-        .eq('id', params.id);
+        .eq('id', id);
 
       if (error) throw error;
 
@@ -216,7 +214,7 @@ export default function MenuItemPage({ params }: MenuItemPageProps) {
           </CardContent>
         </Card>
 
-        <ItemSidesManager menuItemId={params.id} type="item" />
+        <ItemSidesManager menuItemId={id} type="item" />
       </div>
     </div>
   );
