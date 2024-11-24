@@ -74,21 +74,18 @@ export interface MenuItemSide {
   side: Side;
 }
 
-export interface MenuItem {
+export type MenuItem = {
   id: string;
   name: string;
-  price: string | number | null;
-  description: string | null;
+  description: string;
   category: MenuCategory;
+  price: string | number | null;
+  image_url: string | null;
   is_special: boolean;
-  day?: DayOfWeek;
-  image_url?: string | null;
-  created_at?: string;
-  updated_at?: string;
-  menu_item_sides?: MenuItemSide[];
-  menu_sizes?: MenuItemSize[];
-  menu_extras?: MenuItemExtra[];
-}
+  menu_item_sides: TransformedMenuItemSide[];
+  menu_sizes: MenuItemSize[];
+  menu_extras: MenuItemExtra[];
+};
 
 export interface MenuSpecial {
   id: string;
@@ -152,12 +149,12 @@ export type SizeOption = Omit<MenuItemSize, 'id'>;
 export type ExtraOption = Omit<MenuItemExtra, 'id'>;
 export type NewMenuItem = Omit<MenuItem, 'id' | 'created_at' | 'updated_at'>;
 
-// Update MenuItemWithRelations to include unique constraints
+// Update MenuItemWithRelations to include proper typing for specials
 export interface MenuItemWithRelations extends MenuItem {
   sizes: Array<{ size_name: string; price: string }>;
   extras: Array<{ extra_name: string; price: string }>;
   sides: Side[];
-  specials: any[]; // Define proper type if needed
+  specials: MenuSpecial[];
 }
 
 // Add this interface
@@ -221,3 +218,92 @@ export interface SideFormData {
   category: SideCategory;
   is_active: boolean;
 }
+
+// Raw types (from database)
+export type RawMenuItemSide = {
+  id: string;
+  is_default: boolean;
+  sides: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number | null;
+    category: string;
+    is_active: boolean;
+  };
+};
+
+export type RawMenuSize = {
+  id: string;
+  size_name: string;
+  price: number;
+};
+
+export type RawMenuExtra = {
+  id: string;
+  extra_name: string;
+  price: number;
+};
+
+export interface RawMenuItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number | null;
+  image_url: string | null;
+  menu_item_sides: {
+    id: string;
+    is_default: boolean;
+    sides: {
+      id: string;
+      name: string;
+      description: string | null;
+      price: number | null;
+      category: string;
+      is_active: boolean;
+    };
+  }[];
+  menu_sizes: {
+    id: string;
+    size_name: string;
+    price: number;
+  }[];
+  menu_extras: {
+    id: string;
+    extra_name: string;
+    price: number;
+  }[];
+}
+
+// Transformed types (for application use)
+export type TransformedMenuItemSide = {
+  id: string;
+  menu_item_id: string;
+  side_id: string;
+  is_default: boolean;
+  side: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number | null;
+    category: SideCategory;
+    is_active: boolean;
+  };
+};
+
+export type TransformedMenuSize = {
+  id: string;
+  menu_item_id: string;
+  size_name: string;
+  price: string;
+  created_at: string;
+};
+
+export type TransformedMenuExtra = {
+  id: string;
+  menu_item_id: string;
+  extra_name: string;
+  price: string;
+  created_at: string;
+};

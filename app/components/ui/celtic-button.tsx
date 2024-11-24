@@ -15,5 +15,14 @@ export const CelticButton = ({
   type = 'button',
   disabled = false,
 }: CelticButtonProps) => {
-  // ... button implementation ...
+  return (
+    <button
+      onClick={onClick}
+      className={`celtic-button ${className}`}
+      type={type}
+      disabled={disabled}
+    >
+      {children}
+    </button>
+  );
 };

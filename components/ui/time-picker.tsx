@@ -16,9 +16,19 @@ interface TimePickerProps {
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
   label?: string;
+  disabled?: boolean;
+  error?: string;
+  className?: string;
 }
 
-export function TimePicker({ date, setDate, label }: TimePickerProps) {
+export function TimePicker({
+  date,
+  setDate,
+  label,
+  disabled = false,
+  error,
+  className,
+}: TimePickerProps) {
   // Create arrays for hours (12-hour format) and minutes
   const hours = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutes = Array.from({ length: 60 }, (_, i) => i);
@@ -30,31 +40,49 @@ export function TimePicker({ date, setDate, label }: TimePickerProps) {
   const period = date ? (date.getHours() >= 12 ? 'PM' : 'AM') : undefined;
 
   // Handle time updates
-  const updateTime = (
-    newHour?: number,
-    newMinute?: number,
-    newPeriod?: string
-  ) => {
-    if (!newHour && !newMinute && !newPeriod) return;
+  const updateTime = React.useCallback(
+    (newHour?: number, newMinute?: number, newPeriod?: string) => {
+      if (disabled) return;
+      if (!newHour && !newMinute && !newPeriod) return;
 
-    const currentDate = date || new Date();
-    const currentHour = newHour || hour || 12;
-    const currentMinute = newMinute ?? minute ?? 0;
-    const currentPeriod = newPeriod || period || 'AM';
+      try {
+        const currentDate = date || new Date();
+        const currentHour = newHour || hour || 12;
+        const currentMinute = newMinute ?? minute ?? 0;
+        const currentPeriod = newPeriod || period || 'AM';
 
-    let hours24 = currentHour;
-    if (currentPeriod === 'PM' && currentHour !== 12) hours24 += 12;
-    if (currentPeriod === 'AM' && currentHour === 12) hours24 = 0;
+        let hours24 = currentHour;
+        if (currentPeriod === 'PM' && currentHour !== 12) hours24 += 12;
+        if (currentPeriod === 'AM' && currentHour === 12) hours24 = 0;
 
-    const newDate = new Date(currentDate);
-    newDate.setHours(hours24);
-    newDate.setMinutes(currentMinute);
-    setDate(newDate);
-  };
+        const newDate = new Date(currentDate);
+        newDate.setHours(hours24);
+        newDate.setMinutes(currentMinute);
+        setDate(newDate);
+      } catch (err) {
+        console.error('Error updating time:', err);
+      }
+    },
+    [date, setDate, hour, minute, period, disabled]
+  );
+
+  const selectClasses = cn(
+    'w-[110px]',
+    'border-[#2C5530]',
+    'focus:ring-[#E4A853]',
+    'text-[#2C5530]',
+    disabled && 'opacity-50 cursor-not-allowed',
+    error && 'border-red-500',
+    className
+  );
 
   return (
     <div className="space-y-2">
-      {label && <Label className="text-[#2C5530]">{label}</Label>}
+      {label && (
+        <Label className={cn('text-[#2C5530]', error && 'text-red-500')}>
+          {label}
+        </Label>
+      )}
       <div className="flex gap-2">
         {/* Hours */}
         <Select
@@ -62,9 +90,11 @@ export function TimePicker({ date, setDate, label }: TimePickerProps) {
           onValueChange={(value) =>
             updateTime(parseInt(value), undefined, undefined)
           }
+          disabled={disabled}
         >
-          <SelectTrigger className="w-[110px] border-[#2C5530] focus:ring-[#E4A853] text-[#2C5530]">
-            <SelectValue placeholder="Hour" className="text-[#2C5530]" />
+          <SelectTrigger className={selectClasses}>
+            <Clock className="h-4 w-4 mr-2 opacity-50" />
+            <SelectValue placeholder="Hour" />
           </SelectTrigger>
           <SelectContent>
             {hours.map((h) => (
@@ -85,11 +115,12 @@ export function TimePicker({ date, setDate, label }: TimePickerProps) {
           onValueChange={(value) =>
             updateTime(undefined, parseInt(value), undefined)
           }
+          disabled={disabled}
         >
-          <SelectTrigger className="w-[110px] border-[#2C5530] focus:ring-[#E4A853] text-[#2C5530]">
-            <SelectValue placeholder="Min" className="text-[#2C5530]" />
+          <SelectTrigger className={selectClasses}>
+            <SelectValue placeholder="Min" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="select-content">
             {minutes.map((m) => (
               <SelectItem
                 key={m}
@@ -106,9 +137,10 @@ export function TimePicker({ date, setDate, label }: TimePickerProps) {
         <Select
           value={period}
           onValueChange={(value) => updateTime(undefined, undefined, value)}
+          disabled={disabled}
         >
-          <SelectTrigger className="w-[110px] border-[#2C5530] focus:ring-[#E4A853] text-[#2C5530]">
-            <SelectValue placeholder="AM/PM" className="text-[#2C5530]" />
+          <SelectTrigger className={selectClasses}>
+            <SelectValue placeholder="AM/PM" />
           </SelectTrigger>
           <SelectContent>
             {periods.map((p) => (
@@ -123,6 +155,7 @@ export function TimePicker({ date, setDate, label }: TimePickerProps) {
           </SelectContent>
         </Select>
       </div>
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
   );
 }

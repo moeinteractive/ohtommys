@@ -7,8 +7,11 @@ import {
   MenuCategory,
   MenuContent,
   MenuItem,
+  MenuItemExtra,
+  MenuItemSize,
   Side,
   SideCategory,
+  TransformedMenuItemSide,
 } from '@/app/types/menu.types';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Footer } from '@/components/footer2';
@@ -128,7 +131,7 @@ export default function FullMenuPage() {
           menu_item_sides!menu_item_sides_menu_item_id_fkey (
             id,
             is_default,
-            sides!menu_item_sides_side_id_fkey (
+            side:sides!menu_item_sides_side_id_fkey (
               id,
               name,
               description,
@@ -179,60 +182,58 @@ export default function FullMenuPage() {
       // Set states if we have data
       if (menuData) {
         console.log('Setting menu items:', menuData);
-        const transformedMenuData = menuData.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          category: item.category as MenuCategory,
-          price: item.price,
-          image_url: item.image_url || null,
-          is_special: false,
-          menu_item_sides:
-            item.menu_item_sides?.map(
-              (menuItemSide: {
-                id: string;
-                is_default: boolean;
-                sides: {
-                  id: string;
-                  name: string;
-                  description: string | null;
-                  price: number | null;
-                  category: string;
-                  is_active: boolean;
-                };
-              }) => ({
-                id: menuItemSide.id,
-                menu_item_id: item.id,
-                side_id: menuItemSide.sides.id,
-                is_default: menuItemSide.is_default,
-                side: {
-                  id: menuItemSide.sides.id,
-                  name: menuItemSide.sides.name,
-                  description: menuItemSide.sides.description,
-                  price: menuItemSide.sides.price,
-                  category:
-                    (menuItemSide.sides.category as SideCategory) || 'Default',
-                  is_active: menuItemSide.sides.is_active ?? true,
-                },
-              })
-            ) || [],
-          menu_sizes:
+        const transformedMenuData: MenuItem[] = menuData.map((item: any) => {
+          // Transform menu item sides
+          const transformedSides: TransformedMenuItemSide[] =
+            item.menu_item_sides?.map((menuItemSide: any) => ({
+              id: menuItemSide.id,
+              menu_item_id: item.id,
+              side_id: menuItemSide.side.id,
+              is_default: menuItemSide.is_default,
+              side: {
+                id: menuItemSide.side.id,
+                name: menuItemSide.side.name,
+                description: menuItemSide.side.description,
+                price: menuItemSide.side.price,
+                category: menuItemSide.side.category as SideCategory,
+                is_active: menuItemSide.side.is_active ?? true,
+              },
+            })) || [];
+
+          // Transform menu sizes
+          const transformedSizes: MenuItemSize[] =
             item.menu_sizes?.map((size: any) => ({
               id: size.id,
               menu_item_id: item.id,
               size_name: size.size_name,
-              price: size.price,
+              price: size.price.toString(),
               created_at: new Date().toISOString(),
-            })) || [],
-          menu_extras:
+            })) || [];
+
+          // Transform menu extras
+          const transformedExtras: MenuItemExtra[] =
             item.menu_extras?.map((extra: any) => ({
               id: extra.id,
               menu_item_id: item.id,
               extra_name: extra.extra_name,
-              price: extra.price,
+              price: extra.price.toString(),
               created_at: new Date().toISOString(),
-            })) || [],
-        }));
+            })) || [];
+
+          // Return transformed menu item
+          return {
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            category: item.category as MenuCategory,
+            price: item.price?.toString() || null,
+            image_url: item.image_url || null,
+            is_special: false,
+            menu_item_sides: transformedSides,
+            menu_sizes: transformedSizes,
+            menu_extras: transformedExtras,
+          };
+        });
 
         setMenuItems(transformedMenuData);
       }
