@@ -1,10 +1,15 @@
 import { supabase } from '@/lib/supabase';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// Define the params type
+type RouteParams = {
+  params: {
+    id: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const body = await request.json();
     const { data, error } = await supabase
@@ -21,10 +26,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { error } = await supabase
       .from('sides')
