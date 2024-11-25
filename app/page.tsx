@@ -280,8 +280,8 @@ export default function Page() {
                 </div>
 
                 <p className="font-cormorant mb-6 sm:mb-12 max-w-2xl mx-auto text-xl sm:text-2xl lg:text-3xl text-[#F5E6D3] drop-shadow-lg font-semibold leading-tight animate-[fadeIn_2s_ease-out,slideUp_2s_ease-out]">
-                  Experience authentic Irish hospitality at the Lake of the
-                  Ozarks&apos; finest pub & grill
+                  Experience Irish hospitality at the Lake of the Ozarks&apos;
+                  finest pub & grill
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 w-full max-w-xl mx-auto animate-[fadeIn_2.5s_ease-out,slideUp_2.5s_ease-out]">
@@ -375,7 +375,7 @@ export default function Page() {
                   title: 'Live Entertainment',
                   mainText:
                     'Featuring the best local bands and entertainment at the Lake. Join us for live music, karaoke nights, and more!',
-                  ctaText: 'View Schedule',
+                  ctaText: 'WEEKENDS',
                   imageSrc: '/images/band.jpg',
                   onClick: () => handleNavigation('/#events'),
                 },
@@ -383,14 +383,14 @@ export default function Page() {
                   title: 'Cornhole & Karaoke',
                   mainText:
                     'Join us every Thursday for competitive cornhole tournaments and karaoke! Win prizes, enjoy drink specials, and show off your singing skills.',
-                  ctaText: 'Join The Fun',
+                  ctaText: 'THURSDAYS',
                   imageSrc: '/images/corhole2.jpg',
                   onClick: () => handleNavigation('/#events'),
                 },
                 {
                   title: 'Special Events',
                   mainText:
-                    'From holiday celebrations to Bike Fest and our KC Chiefs games! Join us for themed parties, decorations, special menus, and unforgettable memories with friends and family.',
+                    'From holiday celebrations to Bike Fest and our KC Chiefs games! Join us for unforgettable memories with friends and family.',
                   ctaText: 'SEE ALL EVENTS',
                   imageSrc: '/images/halloween.jpg',
                   onClick: () => handleNavigation('/#events'),
@@ -401,12 +401,18 @@ export default function Page() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.2 }}
-                  className="relative group h-full flex flex-col overflow-hidden rounded-none border-2 border-[#F5E6D3]/10 bg-black/20 backdrop-blur-sm lg:max-w-none max-w-full mx-auto"
+                  className="relative group h-full flex flex-col overflow-hidden rounded-lg border-2 border-[#F5E6D3]/10 bg-black/20 backdrop-blur-sm lg:max-w-none max-w-full mx-auto"
                 >
+                  {/* Add decorative Celtic corners */}
+                  <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#E4A853]/40" />
+                  <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#E4A853]/40" />
+                  <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#E4A853]/40" />
+                  <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#E4A853]/40" />
+
                   {/* Card content */}
-                  <div className="relative h-full flex flex-col min-[500px]:flex-row lg:flex-col p-1">
+                  <div className="relative h-full flex flex-col min-[500px]:flex-row lg:flex-col p-3">
                     {/* Image Container */}
-                    <div className="relative w-full min-[500px]:w-[40%] lg:w-full h-[250px] min-[500px]:h-full lg:h-[300px] flex-shrink-0">
+                    <div className="relative w-full min-[500px]:w-[40%] lg:w-full h-[250px] min-[500px]:h-full lg:h-[300px] flex-shrink-0 overflow-hidden rounded-lg">
                       <Image
                         src={promo.imageSrc}
                         alt={promo.title}
@@ -418,18 +424,18 @@ export default function Page() {
                     </div>
 
                     {/* Content */}
-                    <div className="relative flex-grow flex flex-col justify-between p-4 lg:p-6 bg-gradient-to-b from-black/90 to-[#001F0F]/90 w-full min-[500px]:w-[60%] lg:w-full">
+                    <div className="relative flex-grow flex flex-col justify-between p-4 lg:p-6">
                       <div>
-                        <h3 className="font-playfair text-2xl min-[500px]:text-3xl lg:text-3xl text-center text-[#E4A853] mb-2 min-[500px]:mb-3 lg:mb-6">
+                        <h3 className="font-irish text-2xl min-[500px]:text-3xl lg:text-3xl text-center text-[#E4A853] mb-4">
                           {promo.title}
                         </h3>
-                        <p className="font-cormorant text-lg min-[500px]:text-xl lg:text-2xl text-center text-[#F5E6D3] leading-tight lg:leading-relaxed">
+                        <p className="font-cormorant text-lg min-[500px]:text-xl lg:text-2xl text-center text-[#F5E6D3] leading-relaxed">
                           {promo.mainText}
                         </p>
                       </div>
                       <CelticButton
                         onClick={promo.onClick}
-                        className="w-full mt-4 text-xs min-[500px]:text-sm lg:text-xl py-1 min-[500px]:py-1.5 lg:py-4 px-2 lg:px-8"
+                        className="w-full mt-6 text-base lg:text-xl py-3 lg:py-4 px-4 lg:px-8"
                       >
                         {promo.ctaText}
                       </CelticButton>
@@ -459,8 +465,7 @@ export default function Page() {
 
                 {/* Text */}
                 <p className="font-cormorant text-2xl md:text-3xl text-[#F5E6D3] tracking-wider">
-                  Live Music Every Weekend • Karaoke • Sports • Holiday
-                  Celebrations
+                  Live Music • Karaoke • Sports • Holiday Celebrations
                 </p>
 
                 {/* Decorative corners */}

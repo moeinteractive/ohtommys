@@ -45,6 +45,9 @@ interface RawSpecialData {
   };
 }
 
+// Update the DAYS constant to only include days you're open
+const DAYS = ['wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+
 // Update the DayButton component
 const DayButton = ({
   day,
@@ -63,18 +66,12 @@ const DayButton = ({
       transition-all duration-300
       ${
         isSelected
-          ? `
-          bg-[#2A4E45] text-[#F5E6D3]
-          `
-          : `
-          bg-transparent text-[#2A4E45]
-          hover:bg-[#2A4E45]/5
-          border border-[#2A4E45]
-          `
+          ? `bg-[#2A4E45] text-[#F5E6D3]`
+          : `bg-transparent text-[#2A4E45] hover:bg-[#2A4E45]/5 border border-[#2A4E45]`
       }
     `}
   >
-    <span className="relative z-10 uppercase">{day}</span>
+    <span className="relative z-10 capitalize">{day}</span>
   </button>
 );
 
@@ -122,9 +119,16 @@ const overlayStyles = `
 
 export default function SpecialsPage() {
   const [menuSpecials, setMenuSpecials] = useState<MenuSpecialType[]>([]);
-  const [selectedDay, setSelectedDay] = useState<string>(
-    new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
-  );
+  const [selectedDay, setSelectedDay] = useState<string>(() => {
+    const today = new Date()
+      .toLocaleDateString('en-US', { weekday: 'long' })
+      .toLowerCase();
+    // If today is Monday or Tuesday, default to Wednesday
+    if (today === 'monday' || today === 'tuesday') {
+      return 'wednesday';
+    }
+    return today;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -163,6 +167,10 @@ export default function SpecialsPage() {
         )
         .order('day');
 
+      // Add debugging
+      console.log('Raw Specials Data:', specialsData);
+      console.log('Specials Error:', specialsError);
+
       if (specialsError) throw specialsError;
 
       if (specialsData) {
@@ -186,7 +194,6 @@ export default function SpecialsPage() {
             price: special.menu_items.price
               ? Number(special.menu_items.price)
               : null,
-            image_url: '/images/default-special.jpg',
             created_at: special.created_at,
             updated_at: special.updated_at,
             menu_items: {
@@ -198,11 +205,12 @@ export default function SpecialsPage() {
               description: special.menu_items.description,
               category: special.menu_items.category,
               is_special: special.menu_items.is_special,
-              image_url: '/images/default-special.jpg',
             },
           };
         });
 
+        // Add debugging
+        console.log('Transformed Specials:', transformedSpecials);
         setMenuSpecials(transformedSpecials);
       }
     } catch (error) {
@@ -247,6 +255,10 @@ export default function SpecialsPage() {
     {} as Record<string, MenuSpecialType[]>
   );
 
+  // Add this debug
+  console.log('Selected Day:', selectedDay);
+  console.log('SpecialsByDay:', specialsByDay);
+
   // Update the DaySection component
   const DaySection = ({
     day,
@@ -256,114 +268,125 @@ export default function SpecialsPage() {
     specials: MenuSpecialType[];
   }) => {
     return (
-      <div className="relative min-h-[calc(100vh-240px)] flex flex-col lg:flex-row gap-4 lg:gap-8">
-        {/* Left Side - Days Navigation - Adjusted for fold-like resolutions */}
-        <div className="lg:w-64 flex-shrink-0">
-          <div className="lg:sticky lg:top-4">
-            <div className="bg-[#F5E6D3] border-2 border-[#2A4E45] p-3 min-[500px]:p-6">
-              <h3
-                className={`${headingFont.className} text-[#2A4E45] text-xl min-[500px]:text-2xl mb-4 min-[500px]:mb-8 text-center uppercase tracking-wider`}
-              >
-                Daily Specials
-              </h3>
-              <div className="grid grid-cols-2 min-[500px]:grid-cols-1 gap-2">
-                {Object.keys(specialsByDay).map((dayKey) => (
-                  <DayButton
-                    key={dayKey}
-                    day={dayKey}
-                    isSelected={selectedDay === dayKey}
-                    onClick={() => setSelectedDay(dayKey)}
-                  />
-                ))}
+      <div className="relative z-20">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          {/* Left Side Navigation */}
+          <div className="lg:w-64 flex-shrink-0">
+            <div className="lg:sticky lg:top-4 relative">
+              <div className="bg-[#F5E6D3] border-2 border-[#2A4E45] p-3 min-[500px]:p-6">
+                <h3
+                  className={`${headingFont.className} text-[#2A4E45] text-xl min-[500px]:text-2xl mb-4 min-[500px]:mb-8 text-center uppercase tracking-wider`}
+                >
+                  Daily Specials
+                </h3>
+                <div className="grid grid-cols-2 min-[500px]:grid-cols-1 gap-2">
+                  {DAYS.map((day) => {
+                    // Only render button if there are specials for that day
+                    if (!specialsByDay[day]) return null;
+
+                    return (
+                      <DayButton
+                        key={day}
+                        day={day}
+                        isSelected={selectedDay === day}
+                        onClick={() => setSelectedDay(day)}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* View Full Menu button */}
+                <Link
+                  href="/full-menu"
+                  className={`
+                    ${headingFont.className}
+                    mt-4 min-[500px]:mt-8 w-full block
+                    text-center py-2 min-[500px]:py-3 px-4
+                    bg-[#2A4E45] text-[#F5E6D3]
+                    hover:bg-[#2A4E45]/90
+                    transition-all duration-300
+                    border border-[#2A4E45]
+                    text-sm min-[500px]:text-base tracking-[0.1em]
+                    uppercase
+                  `}
+                >
+                  View Full Menu
+                </Link>
               </div>
 
-              {/* View Full Menu button */}
-              <Link
-                href="/full-menu"
-                className={`
-                  ${headingFont.className}
-                  mt-4 min-[500px]:mt-8 w-full block
-                  text-center py-2 min-[500px]:py-3 px-4
-                  bg-[#2A4E45] text-[#F5E6D3]
-                  hover:bg-[#2A4E45]/90
-                  transition-all duration-300
-                  border border-[#2A4E45]
-                  text-sm min-[500px]:text-base tracking-[0.1em]
-                  uppercase
-                `}
-              >
-                View Full Menu
-              </Link>
+              {/* Fajita Plate - Attached to Daily Specials box */}
+              <div className="hidden lg:block absolute -bottom-[300px] left-1/2 w-[400px] -translate-x-1/2">
+                <Image
+                  src="/images/menu/fajita-plate.png"
+                  alt=""
+                  width={400}
+                  height={400}
+                  className="object-contain"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content - Adjusted spacing */}
-        <div className="flex-1">
-          <div className="bg-[#F5E6D3] border-2 border-[#2A4E45] p-4 min-[500px]:p-8">
-            {/* Title with adjusted spacing */}
-            <div className="text-center mb-6 min-[500px]:mb-12">
-              <h2
-                className={`${headingFont.className} text-3xl min-[500px]:text-5xl text-[#2A4E45] uppercase tracking-[0.2em] mb-4`}
-              >
-                {day === selectedDay ? "Today's Specials" : `${day}'s Specials`}
-              </h2>
-              <div className="flex items-center justify-center gap-4">
-                <div className="w-12 min-[500px]:w-16 h-px bg-[#2A4E45]" />
-                <div className="w-3 min-[500px]:w-4 h-3 min-[500px]:h-4 rotate-45 border-2 border-[#2A4E45]" />
-                <div className="w-12 min-[500px]:w-16 h-px bg-[#2A4E45]" />
-              </div>
-            </div>
-
-            {/* Specials Grid - Adjusted for better mobile display */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-[500px]:gap-8 max-w-5xl mx-auto">
-              {specials.map((special, index) => (
-                <motion.div
-                  key={special.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="relative bg-white border-2 border-[#2A4E45] p-6"
+          {/* Main Content Area */}
+          <div className="flex-1">
+            <div className="bg-[#F5E6D3] border-2 border-[#2A4E45] p-4 min-[500px]:p-8">
+              {/* Title with adjusted spacing */}
+              <div className="text-center mb-6 min-[500px]:mb-12">
+                <h2
+                  className={`${headingFont.className} text-3xl min-[500px]:text-5xl text-[#2A4E45] uppercase tracking-[0.2em] mb-4`}
                 >
-                  <div className="relative h-48 mb-6 border border-[#2A4E45]/20">
-                    <Image
-                      src={special.image_url || '/images/default-special.jpg'}
-                      alt={special.name || 'Special dish'}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+                  {day === selectedDay
+                    ? "Today's Specials"
+                    : `${day}'s Specials`}
+                </h2>
+                <div className="flex items-center justify-center gap-4">
+                  <div className="w-12 min-[500px]:w-16 h-px bg-[#2A4E45]" />
+                  <div className="w-3 min-[500px]:w-4 h-3 min-[500px]:h-4 rotate-45 border-2 border-[#2A4E45]" />
+                  <div className="w-12 min-[500px]:w-16 h-px bg-[#2A4E45]" />
+                </div>
+              </div>
 
-                  <div className="text-center">
-                    <h3
-                      className={`${headingFont.className} text-2xl text-[#2A4E45] uppercase tracking-wide mb-2`}
-                    >
-                      {special.name}
-                    </h3>
-                    <p
-                      className={`${bodyFont.className} text-lg text-[#2A4E45]/80 mb-4`}
-                    >
-                      {special.special_description || special.description}
-                    </p>
-                    <div className="flex items-center justify-center gap-4">
-                      <span className="text-2xl font-bold text-[#2A4E45]">
-                        ${special.special_price.toFixed(2)}
-                      </span>
-                      {special.price && (
-                        <span className="text-sm text-[#2A4E45]/60 line-through">
-                          ${special.price.toFixed(2)}
+              {/* Specials Grid - Adjusted for better mobile display */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-[500px]:gap-8 max-w-5xl mx-auto">
+                {specials.map((special, index) => (
+                  <motion.div
+                    key={special.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="relative bg-white border-2 border-[#2A4E45] p-6"
+                  >
+                    <div className="text-center">
+                      <h3
+                        className={`${headingFont.className} text-2xl text-[#2A4E45] uppercase tracking-wide mb-2`}
+                      >
+                        {special.name}
+                      </h3>
+                      <p
+                        className={`${bodyFont.className} text-lg text-[#2A4E45]/80 mb-4`}
+                      >
+                        {special.special_description || special.description}
+                      </p>
+                      <div className="flex items-center justify-center gap-4">
+                        <span className="text-2xl font-bold text-[#2A4E45]">
+                          ${special.special_price.toFixed(2)}
                         </span>
-                      )}
+                        {special.price && (
+                          <span className="text-sm text-[#2A4E45]/60 line-through">
+                            ${special.price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Decorative Corner Elements */}
-                  <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#2A4E45]" />
-                  <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#2A4E45]" />
-                  <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#2A4E45]" />
-                  <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#2A4E45]" />
-                </motion.div>
-              ))}
+                    {/* Decorative Corner Elements */}
+                    <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#2A4E45]" />
+                    <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#2A4E45]" />
+                    <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-[#2A4E45]" />
+                    <div className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-[#2A4E45]" />
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -381,10 +404,52 @@ export default function SpecialsPage() {
       <div className="woven-overlay" />
 
       <Header />
-      <div className="container mx-auto px-4 pt-[120px] min-[500px]:pt-[160px] lg:pt-[200px] pb-12">
-        {specialsByDay[selectedDay] && (
-          <DaySection day={selectedDay} specials={specialsByDay[selectedDay]} />
-        )}
+      <div className="container mx-auto px-4 pt-[120px] min-[500px]:pt-[160px] lg:pt-[200px] pb-12 relative">
+        {/* Decorative Images Overlay */}
+        <div className="hidden lg:block absolute inset-0 pointer-events-none z-30">
+          {/* Grilled Cheese - Top Right of Today's Specials */}
+          <div className="absolute top-[100px] right-0 w-[300px] translate-x-20">
+            <Image
+              src="/images/menu/kids-grilledcheese.png"
+              alt=""
+              width={300}
+              height={300}
+              className="object-contain"
+            />
+          </div>
+
+          {/* Tacos - Bottom Right */}
+          <div className="absolute bottom-0 right-0 w-[250px] translate-x-10 translate-y-20">
+            <Image
+              src="/images/menu/tacos.png"
+              alt=""
+              width={250}
+              height={250}
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        {/* Update z-index for menu content to be above the fajita plate but below other images */}
+        <div className="relative z-20">
+          {menuSpecials.length === 0 ? (
+            <div className="bg-[#F5E6D3] border-2 border-[#2A4E45] p-8 text-center">
+              <h2
+                className={`${headingFont.className} text-3xl text-[#2A4E45] mb-4`}
+              >
+                No Specials Available
+              </h2>
+              <p className={`${bodyFont.className} text-lg text-[#2A4E45]/80`}>
+                Please check back later for our daily specials.
+              </p>
+            </div>
+          ) : specialsByDay[selectedDay] ? (
+            <DaySection
+              day={selectedDay}
+              specials={specialsByDay[selectedDay]}
+            />
+          ) : null}
+        </div>
       </div>
       <Footer />
     </div>

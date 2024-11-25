@@ -100,10 +100,40 @@ export default function SidesPage() {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       try {
+        // Validate price based on category
+        let price = formData.price ? parseFloat(formData.price) : null;
+
+        // Price validation rules based on category
+        switch (formData.category) {
+          case 'Default':
+            price = 0.0; // Default sides are always free
+            break;
+          case 'Premium':
+            if (!price || price !== 2.99) {
+              toast({
+                title: 'Validation Error',
+                description: 'Premium sides must be priced at $2.99',
+                variant: 'destructive',
+              });
+              return;
+            }
+            break;
+          case 'Special':
+            if (!price || price !== 1.99) {
+              toast({
+                title: 'Validation Error',
+                description: 'Special sides must be priced at $1.99',
+                variant: 'destructive',
+              });
+              return;
+            }
+            break;
+        }
+
         const sideData = {
           name: formData.name,
           description: formData.description,
-          price: formData.price ? parseFloat(formData.price) : null,
+          price: price,
           category: formData.category,
           is_active: formData.is_active,
         };
@@ -138,6 +168,28 @@ export default function SidesPage() {
           variant: 'destructive',
         });
       }
+    };
+
+    // Update price automatically when category changes
+    const handleCategoryChange = (value: SideCategory) => {
+      let defaultPrice = '';
+      switch (value) {
+        case 'Default':
+          defaultPrice = '0.00';
+          break;
+        case 'Premium':
+          defaultPrice = '2.99';
+          break;
+        case 'Special':
+          defaultPrice = '1.99';
+          break;
+      }
+
+      setFormData({
+        ...formData,
+        category: value,
+        price: defaultPrice,
+      });
     };
 
     return (
@@ -185,25 +237,10 @@ export default function SidesPage() {
             </div>
 
             <div>
-              <Label>Price</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-                className="border-[#2C5530]"
-              />
-            </div>
-
-            <div>
               <Label>Category</Label>
               <Select
                 value={formData.category}
-                onValueChange={(value: SideCategory) =>
-                  setFormData({ ...formData, category: value })
-                }
+                onValueChange={handleCategoryChange}
               >
                 <SelectTrigger className="border-[#2C5530]">
                   <SelectValue placeholder="Select category" />
@@ -216,6 +253,24 @@ export default function SidesPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label>Price</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+                className="border-[#2C5530]"
+                disabled // Price is now controlled by category
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Price is automatically set based on category: Default: Free,
+                Premium: $2.99, Special: $1.99
+              </p>
             </div>
 
             <div className="flex justify-end gap-2">
@@ -246,19 +301,26 @@ export default function SidesPage() {
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
       <div className="container mx-auto py-12 px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-6xl md:text-7xl font-serif font-bold text-[#2C5530] mb-3 tracking-tight drop-shadow-lg">
-            Sides Management
-          </h1>
-          <p className="text-xl text-[#2C5530]/80 font-sans uppercase tracking-[0.2em] mb-4">
-            Manage Side Options & Pricing
-          </p>
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="w-24 h-px bg-[#E4A853]"></div>
-            <Utensils className="h-8 w-8 text-[#E4A853]" aria-hidden="true" />
-            <div className="w-24 h-px bg-[#E4A853]"></div>
+        <div className="text-center mb-12 relative">
+          <div className="bg-[#F5F5F5] pt-16 pb-4">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-[#2C5530] mb-4 tracking-tight drop-shadow-lg">
+              Sides Management
+            </h1>
+            <p className="text-lg md:text-xl text-[#2C5530]/80 font-sans uppercase tracking-[0.2em] mb-6">
+              Manage Side Options & Pricing
+            </p>
+            <div className="flex items-center justify-center gap-4 mb-10">
+              <div className="w-16 md:w-24 h-px bg-[#E4A853]"></div>
+              <Utensils
+                className="h-6 md:h-8 w-6 md:w-8 text-[#E4A853]"
+                aria-hidden="true"
+              />
+              <div className="w-16 md:w-24 h-px bg-[#E4A853]"></div>
+            </div>
           </div>
-          <AdminNav />
+          <div className="mt-6">
+            <AdminNav />
+          </div>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
@@ -307,10 +369,10 @@ export default function SidesPage() {
                   .map((side) => (
                     <div
                       key={side.id}
-                      className="flex items-center gap-4 p-3 bg-white border-2 border-[#2C5530] rounded-lg shadow-md"
+                      className="flex flex-col md:flex-row items-start md:items-center gap-4"
                     >
                       <div className="flex-1">
-                        <div className="flex justify-between items-start">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                           <div>
                             <h3 className="font-medium">{side.name}</h3>
                             {side.description && (

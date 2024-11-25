@@ -18,7 +18,7 @@ import { TimePicker } from '@/components/ui/time-picker';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
-import { Calendar, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Edit2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type Event = {
@@ -83,7 +83,7 @@ export default function EventsPage() {
   const renderEventCard = (event: Event) => (
     <div
       key={event.id}
-      className="flex items-center gap-4 p-3 bg-white border-2 border-[#2C5530] rounded-lg shadow-md"
+      className="bg-white border border-[#2C5530]/20 hover:border-[#2C5530]/30 rounded-lg shadow-sm transition-all duration-200"
     >
       <div className="flex-1">
         {editingEvent === event.id ? (
@@ -107,24 +107,28 @@ export default function EventsPage() {
               {!event.is_recurring && (
                 <div>
                   <Label>Date</Label>
-                  <Input
-                    type="date"
-                    value={event.event_date || ''}
-                    onChange={(e) =>
-                      setEvents(
-                        events.map((ev) =>
-                          ev.id === event.id
-                            ? { ...ev, event_date: e.target.value }
-                            : ev
+                  <div className="relative">
+                    <Input
+                      type="date"
+                      value={event.event_date || ''}
+                      onChange={(e) =>
+                        setEvents(
+                          events.map((ev) =>
+                            ev.id === event.id
+                              ? { ...ev, event_date: e.target.value }
+                              : ev
+                          )
                         )
-                      )
-                    }
-                  />
+                      }
+                      className="w-full px-3 py-2 appearance-none"
+                      style={{ colorScheme: 'light' }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
+              <div className="relative">
                 <TimePicker
                   label="Start Time"
                   date={
@@ -149,7 +153,7 @@ export default function EventsPage() {
                   }}
                 />
               </div>
-              <div>
+              <div className="relative">
                 <TimePicker
                   label="End Time"
                   date={
@@ -198,35 +202,57 @@ export default function EventsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-[250px_200px_1fr_100px] items-center gap-4">
-            <div className="font-medium truncate">{event.title}</div>
-            <div className="text-sm text-muted-foreground">
-              {event.is_recurring
-                ? event.recurring_days
-                    ?.map((day) => day.charAt(0).toUpperCase() + day.slice(1))
-                    .join(', ')
-                : formatDate(event.event_date)}
+          <div className="p-4">
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <h3 className="font-medium text-lg text-[#2C5530] leading-tight">
+                {event.title}
+              </h3>
+              <div className="flex gap-2 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setEditingEvent(editingEvent === event.id ? null : event.id)
+                  }
+                  className="h-8 w-8 p-0 text-[#2C5530] hover:text-[#2C5530] hover:bg-[#2C5530]/10"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDeleteId(event.id)}
+                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {formatTime(event.start_time)} - {formatTime(event.end_time)}
-            </div>
-            <div className="flex gap-1 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  setEditingEvent(editingEvent === event.id ? null : event.id)
-                }
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setDeleteId(event.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+
+            <div className="space-y-1.5 text-sm">
+              <div className="flex items-center gap-2 text-[#2C5530]/70">
+                <Calendar className="h-4 w-4 shrink-0" />
+                <span>
+                  {event.is_recurring
+                    ? event.recurring_days
+                        ?.map(
+                          (day) => day.charAt(0).toUpperCase() + day.slice(1)
+                        )
+                        .join(', ')
+                    : formatDate(event.event_date)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-[#2C5530]/70">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>
+                  {formatTime(event.start_time)} - {formatTime(event.end_time)}
+                </span>
+              </div>
+              {event.description && (
+                <div className="flex gap-2 text-[#2C5530]/60 mt-2">
+                  <span className="text-sm">{event.description}</span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -341,19 +367,26 @@ export default function EventsPage() {
     <div className="min-h-screen bg-[#F5F5F5]">
       <div className="container mx-auto py-12 px-4">
         {/* Header Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl md:text-7xl font-serif font-bold text-[#2C5530] mb-3 tracking-tight drop-shadow-lg">
-            Events Management
-          </h1>
-          <p className="text-xl text-[#2C5530]/80 font-sans uppercase tracking-[0.2em] mb-4">
-            Manage Live Events & Entertainment
-          </p>
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="w-24 h-px bg-[#E4A853]"></div>
-            <Calendar className="h-8 w-8 text-[#E4A853]" aria-hidden="true" />
-            <div className="w-24 h-px bg-[#E4A853]"></div>
+        <div className="text-center mb-12 relative">
+          <div className="bg-[#F5F5F5] pt-16 pb-4">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-[#2C5530] mb-4 tracking-tight drop-shadow-lg">
+              Events Management
+            </h1>
+            <p className="text-lg md:text-xl text-[#2C5530]/80 font-sans uppercase tracking-[0.2em] mb-6">
+              Manage Live Events & Entertainment
+            </p>
+            <div className="flex items-center justify-center gap-4 mb-10">
+              <div className="w-16 md:w-24 h-px bg-[#E4A853]"></div>
+              <Calendar
+                className="h-6 md:h-8 w-6 md:w-8 text-[#E4A853]"
+                aria-hidden="true"
+              />
+              <div className="w-16 md:w-24 h-px bg-[#E4A853]"></div>
+            </div>
           </div>
-          <AdminNav />
+          <div className="mt-6">
+            <AdminNav />
+          </div>
         </div>
 
         {/* Add max-w-4xl wrapper around the content */}
@@ -379,7 +412,7 @@ export default function EventsPage() {
               </AccordionTrigger>
               <AccordionContent className="px-6 py-4">
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label className="text-[#2C5530]">Title</Label>
                       <Input
@@ -393,23 +426,26 @@ export default function EventsPage() {
                     {!newEvent.is_recurring && (
                       <div>
                         <Label className="text-[#2C5530]">Date</Label>
-                        <Input
-                          type="date"
-                          value={newEvent.event_date || ''}
-                          onChange={(e) =>
-                            setNewEvent({
-                              ...newEvent,
-                              event_date: e.target.value,
-                            })
-                          }
-                          className="border-[#2C5530] focus:ring-[#E4A853] text-[#2C5530]"
-                        />
+                        <div className="relative">
+                          <Input
+                            type="date"
+                            value={newEvent.event_date || ''}
+                            onChange={(e) =>
+                              setNewEvent({
+                                ...newEvent,
+                                event_date: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 appearance-none border-[#2C5530] focus:ring-[#E4A853] text-[#2C5530]"
+                            style={{ colorScheme: 'light' }}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
+                    <div className="relative">
                       <TimePicker
                         label="Start Time"
                         date={
@@ -431,7 +467,7 @@ export default function EventsPage() {
                         }}
                       />
                     </div>
-                    <div>
+                    <div className="relative">
                       <TimePicker
                         label="End Time"
                         date={
@@ -537,29 +573,29 @@ export default function EventsPage() {
           </Accordion>
 
           {/* Events List Section */}
-          <Card className="border-2 border-[#2C5530] bg-[#F5F5F5] shadow-lg mt-8">
-            <CardHeader className="border-b border-[#2C5530]/10">
-              <CardTitle className="text-2xl font-serif text-[#2C5530] flex items-center gap-3">
+          <Card className="border-2 border-[#2C5530] bg-[#F5F5F5] shadow-lg mb-8">
+            <CardHeader className="border-b border-[#2C5530]/10 px-4 py-3">
+              <CardTitle className="text-xl sm:text-2xl font-serif text-[#2C5530] flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
                 Special Events
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-4 space-y-3">
               {events
                 .filter((event) => !event.is_recurring)
                 .map(renderEventCard)}
             </CardContent>
           </Card>
 
-          {/* Recurring Events Section - similar updates to the Events List Section */}
-          <Card className="border-2 border-[#2C5530] bg-white shadow-xl mt-8">
-            <CardHeader className="border-b border-[#2C5530]/10">
-              <CardTitle className="text-2xl font-serif text-[#2C5530] flex items-center gap-3">
+          {/* Recurring Events Section */}
+          <Card className="border-2 border-[#2C5530] bg-white shadow-xl">
+            <CardHeader className="border-b border-[#2C5530]/10 px-4 py-3">
+              <CardTitle className="text-xl sm:text-2xl font-serif text-[#2C5530] flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
                 Recurring Events
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-4 space-y-3">
               {events
                 .filter((event) => event.is_recurring)
                 .map(renderEventCard)}

@@ -30,8 +30,8 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="bg-[#001F0F]">
-      <div className="py-16 px-4">
+    <div className="absolute inset-0 min-h-screen bg-[#001F0F]">
+      <div className="pt-48 pb-32 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h1 className="text-6xl md:text-7xl font-playfair font-bold text-[#E4A853] mb-4 tracking-tight drop-shadow-lg">

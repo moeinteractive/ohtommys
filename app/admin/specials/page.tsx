@@ -279,7 +279,7 @@ export default function SpecialsPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-[250px_1fr_100px] items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-[250px_1fr_100px] items-center gap-4">
               <h3 className="font-medium truncate">{menuItem.name}</h3>
               <div className="text-sm text-muted-foreground">
                 <span className="font-semibold text-[#2C5530]">
@@ -427,7 +427,7 @@ export default function SpecialsPage() {
                   {/* Days Selection */}
                   <div>
                     <Label className="text-[#2C5530]">Select Days</Label>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-2">
                       {DAYS.map((day) => (
                         <div key={day} className="flex items-center space-x-2">
                           <Checkbox

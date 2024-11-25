@@ -147,35 +147,26 @@ export function MenuClient({
       className="flex items-center gap-4 p-3 bg-white border-2 border-[#2C5530] rounded-lg shadow-md"
     >
       <div className="flex-1">
-        <div className="grid grid-cols-[1fr_auto] gap-4">
-          <div>
-            <h3 className="font-medium">{item.name}</h3>
-            {item.description && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {item.description}
-              </p>
-            )}
+        <div className="grid grid-cols-1 md:grid-cols-[250px_1fr_100px] items-center gap-4">
+          <div className="font-medium truncate">{item.name}</div>
+          <div className="text-sm text-muted-foreground">
+            {item.description}
           </div>
-          <div className="flex items-start gap-2">
-            <span className="font-semibold text-[#2C5530]">
-              ${Number(item.price).toFixed(2)}
-            </span>
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setEditingItem(item.id)}
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setDeleteId(item.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="flex gap-1 justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditingItem(item.id)}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDeleteId(item.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -289,8 +280,8 @@ export function MenuClient({
 
       {/* Form Modal */}
       {(showNewItemForm || editingItem) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="max-w-2xl w-full">
+        <div className="fixed inset-0 bg-black/50 flex items-start justify-center p-4 z-50 overflow-y-auto">
+          <div className="my-8 w-full max-w-2xl">
             <MenuItemForm
               item={
                 editingItem

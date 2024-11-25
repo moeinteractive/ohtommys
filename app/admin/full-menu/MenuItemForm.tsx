@@ -218,7 +218,7 @@ export function MenuItemForm({
 
   return (
     <Card className="border-2 border-[#2C5530] bg-[#F5F5F5] shadow-lg">
-      <CardHeader className="border-b border-[#2C5530]/10">
+      <CardHeader className="border-b border-[#2C5530]/10 sticky top-0 bg-[#F5F5F5] z-10">
         <div className="flex items-center justify-between">
           <CardTitle className="text-2xl font-serif text-[#2C5530]">
             {item ? 'Edit Menu Item' : 'New Menu Item'}
@@ -234,7 +234,7 @@ export function MenuItemForm({
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="name">Name</Label>
             <Input

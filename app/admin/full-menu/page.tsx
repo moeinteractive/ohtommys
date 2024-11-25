@@ -176,18 +176,21 @@ export default async function FullMenuPage() {
 
     return (
       <div className="min-h-screen bg-[#F5F5F5]">
-        <div className="container mx-auto py-12 px-4">
+        <div className="container mx-auto py-6 md:py-12 px-4">
           <div className="text-center mb-8">
-            <h1 className="text-6xl md:text-7xl font-serif font-bold text-[#2C5530] mb-3 tracking-tight drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-[#2C5530] mb-3 tracking-tight drop-shadow-lg">
               Full Menu
             </h1>
-            <p className="text-xl text-[#2C5530]/80 font-sans uppercase tracking-[0.2em] mb-4">
+            <p className="text-lg md:text-xl text-[#2C5530]/80 font-sans uppercase tracking-[0.2em] mb-4">
               Manage Pub Grub & Drink Selections
             </p>
             <div className="flex items-center justify-center gap-4 mb-8">
-              <div className="w-24 h-px bg-[#E4A853]"></div>
-              <Menu className="h-8 w-8 text-[#E4A853]" aria-hidden="true" />
-              <div className="w-24 h-px bg-[#E4A853]"></div>
+              <div className="w-12 md:w-24 h-px bg-[#E4A853]"></div>
+              <Menu
+                className="h-6 w-6 md:h-8 md:w-8 text-[#E4A853]"
+                aria-hidden="true"
+              />
+              <div className="w-12 md:w-24 h-px bg-[#E4A853]"></div>
             </div>
             <AdminNav />
           </div>

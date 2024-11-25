@@ -5,8 +5,7 @@ import { Header } from '@/components/header';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { Suspense } from 'react';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 
 function LoadingSpinner() {
   return (
@@ -31,10 +30,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0C1F0C] flex flex-col">
+    <div className="min-h-screen bg-[#F5F5F5] flex flex-col">
       <ErrorBoundary>
-        <Header />
-        <main className="flex-1 pt-32">{children}</main>
+        <div className="fixed top-0 left-0 right-0 z-50 bg-[#001F0F]">
+          <Header />
+        </div>
+        <main className="flex-1 pt-[120px] md:pt-[160px]">{children}</main>
         <Toaster />
       </ErrorBoundary>
     </div>
