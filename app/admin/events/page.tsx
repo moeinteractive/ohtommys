@@ -37,9 +37,12 @@ export default function EventsPage() {
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [newEvent, setNewEvent] = useState<Partial<Event>>({
     title: '',
-    event_date: '',
+    event_date: null,
     description: '',
     is_recurring: false,
+    start_time: null,
+    end_time: null,
+    recurring_days: null,
   });
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -241,10 +244,18 @@ export default function EventsPage() {
       return;
     }
 
-    console.log('Adding new event:', newEvent);
+    const eventToAdd = {
+      ...newEvent,
+      event_date: newEvent.event_date || null,
+      start_time: newEvent.start_time || null,
+      end_time: newEvent.end_time || null,
+      recurring_days: newEvent.recurring_days || null,
+    };
+
+    console.log('Adding new event:', eventToAdd);
     const { data, error } = await supabase
       .from('events')
-      .insert([newEvent])
+      .insert([eventToAdd])
       .select();
 
     if (error) {
@@ -262,9 +273,12 @@ export default function EventsPage() {
       setEvents([...events, data[0]]);
       setNewEvent({
         title: '',
-        event_date: '',
+        event_date: null,
         description: '',
         is_recurring: false,
+        start_time: null,
+        end_time: null,
+        recurring_days: null,
       });
       toast({
         title: 'Success',
